@@ -27,6 +27,7 @@ void *reallocate(void *pointer, size_t oldSize, size_t newSize)
     // if space
     void *result = realloc(pointer, newSize);
 
+    // if allocation fails
     if (result == NULL)
     {
         exit(1);
