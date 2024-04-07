@@ -74,6 +74,6 @@ void push(Value value)
 
 void pop()
 {
-    vm.stackTop--;       // can leave the garbage value
-    return *vm.stackTop; // return popped value
+    vm.stackTop--;       // move back once, recall the PREVIOUS element is the top value in stack
+    return *vm.stackTop; // return "popped" value
 }
