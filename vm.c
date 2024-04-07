@@ -26,8 +26,19 @@ static InterpretResult run()
 
     for (;;)
     {
+#ifdef DEBUG_TRACE_EXECUTION
+        printf("          ");
+        for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
+        {
+            printf("[ ");
+            printValue(*slot);
+            printf(" ]");
+        }
+        printf("\n");
         // Grab relative offset of ip from beginning of bytecide
         disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
+#endif // end DEBUG_TRACE_EXECUTION
+
         uint8_t instruction;
         // grab byte pointed to by ip and advance ip
         // given opcode, get right C code that implements instruction's semantics
@@ -36,12 +47,19 @@ static InterpretResult run()
         case OP_CONSTANT:
         {
             Value constant = READ_CONSTANT();
-            printValue(constant);
+            push(constant);
             printf("\n");
+            break;
+        }
+        case OP_NEGATE:
+        {
+            push(-pop());
             break;
         }
         case OP_RETURN:
         {
+            printValue(pop());
+            printf("\n");
             return INTERPRET_OK;
         }
         }
@@ -72,7 +90,7 @@ void push(Value value)
     vm.stackTop++;        // move top of stack to next entry
 }
 
-void pop()
+Value pop()
 {
     vm.stackTop--;       // move back once, recall the PREVIOUS element is the top value in stack
     return *vm.stackTop; // return "popped" value

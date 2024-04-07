@@ -15,6 +15,7 @@ int main(int argc, const char *argv[])
     writeChunk(&chunk, OP_CONSTANT, 123);
     // storing the index of the constant value
     writeChunk(&chunk, constant, 123);
+    writeChunk(&chunk, OP_NEGATE, 123);
     writeChunk(&chunk, OP_RETURN, 123);
     disassembleChunk(&chunk, "test chunk");
     // VM begins work when we ask it to interpret some chunk of byte code
