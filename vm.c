@@ -23,6 +23,15 @@ static InterpretResult run()
 // reads the next byte from the bytecode, treats the resulting number as an index, and
 // looks up the corresponding Value in the chunk’s constant table
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
+// funny looking syntax here, but gives you a way to contain multiple statements
+// inside a block that also permits a semicolon at the end.
+#define BINARY_OP(op)     \
+    do                    \
+    {                     \
+        double b = pop(); \
+        double a = pop(); \
+        push(a op b);     \
+    } while (false)
 
     for (;;)
     {
@@ -52,10 +61,20 @@ static InterpretResult run()
             break;
         }
         case OP_NEGATE:
-        {
             push(-pop());
             break;
-        }
+        case OP_ADD:
+            BINARY_OP(+);
+            break;
+        case OP_SUBTRACT:
+            BINARY_OP(-);
+            break;
+        case OP_MULTIPLY:
+            BINARY_OP(*);
+            break;
+        case OP_DIVIDE:
+            BINARY_OP(/);
+            break;
         case OP_RETURN:
         {
             printValue(pop());
@@ -66,6 +85,7 @@ static InterpretResult run()
     }
 #undef READ_BYTE
 #undef READ_CONSTANT
+#undef BINARY_OP
 }
 
 InterpretResult interpret(Chunk *chunk)
