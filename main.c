@@ -3,37 +3,89 @@
 #include "debug.h"
 #include "vm.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+static void repl()
+{
+    char line[1024];
+    for (;;)
+    {
+        printf("> ");
+
+        if (!fgets(line, sizeof(line), stdin))
+        {
+            printf("\n");
+            break;
+        }
+    }
+}
+
+static char *readFile(const char *path)
+{
+    FILE *file = fopen(path, "rb"); // stdio File struct
+    if (file == NULL)
+    {
+        fprintf(stderr, "Could not open file \"%s\".\n", path);
+        exit(74);
+    }
+    fseek(file, 0L, SEEK_END);     // seek to end BEFORE reading it
+    size_t fileSize = ftell(file); // tells us how many bytes from start of the file
+    rewind(file);                  // reset file back to beginning
+
+    char *buffer = (char *)malloc(fileSize + 1); // +1 for NULL byte
+    if (buffer == NULL)
+    {
+        fprintf(stderr, "Not enough memory to read \"%s\".\n", path);
+        exit(74);
+    }
+
+    size_t bytesRead = fread(buffer, sizeof(char), fileSize, file);
+    if (bytesRead < fileSize)
+    {
+        fprintf(stderr, "Could not read file \"%s\".\n", path);
+        exit(74);
+    }
+
+    buffer[bytesRead] = '\0';
+
+    fclose(file);
+    return buffer;
+}
+
+static void runFile(const char *path)
+{
+    char *source = readFile(path);              // read file of code
+    InterpretResult result = interpret(source); // execute
+    free(source);                               // free result I guess its on Heap ??
+
+    if (result == INTERPRET_COMPILE_ERROR)
+        exit(65);
+    if (result == INTERPRET_RUNTIME_ERROR)
+        exit(70);
+}
+
 int main(int argc, const char *argv[])
 {
     initVM();
 
-    Chunk chunk;
-    initChunk(&chunk);
-    // storing constant 1.2 in out ValueArray
-    int constant = addConstant(&chunk, 1.2);
-    // Storing OP_CONSTANT into chunk, letting us know the next byte in chunk is a constant
-    writeChunk(&chunk, OP_CONSTANT, 123);
-    // storing the index of the constant value
-    writeChunk(&chunk, constant, 123);
+    // no args then drop into REPL
+    if (argc == 1)
+    {
+        repl();
+    }
+    // Should be path to a script to run
+    else if (argc == 2)
+    {
+        // runFile(argv[1]);
+    }
+    else
+    {
+        fprintf(stderr, "Usage: clox [path]\n");
+        exit(64);
+    }
 
-    constant = addConstant(&chunk, 3.4);
-    writeChunk(&chunk, OP_CONSTANT, 123);
-    writeChunk(&chunk, constant, 123);
-
-    writeChunk(&chunk, OP_ADD, 123);
-
-    constant = addConstant(&chunk, 5.6);
-    writeChunk(&chunk, OP_CONSTANT, 123);
-    writeChunk(&chunk, constant, 123);
-
-    writeChunk(&chunk, OP_DIVIDE, 123);
-
-    writeChunk(&chunk, OP_NEGATE, 123);
-    writeChunk(&chunk, OP_RETURN, 123);
-    disassembleChunk(&chunk, "test chunk");
-    // VM begins work when we ask it to interpret some chunk of byte code
-    interpret(&chunk);
     freeVM();
-    freeChunk(&chunk);
     return 0;
 }
