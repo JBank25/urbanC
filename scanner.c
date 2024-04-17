@@ -21,9 +21,28 @@ void initScanner(const char *source)
     scanner.line = 1;
 }
 
+/**
+ * Checks if a character is a digit.
+ *
+ * @param c The character to check.
+ * @return true if the character is a digit, false otherwise.
+ */
 static bool isDigit(char c)
 {
     return c >= '0' && c <= '9';
+}
+
+/**
+ * Checks if a character is an alphabetic character or an underscore.
+ *
+ * @param c The character to check.
+ * @return true if the character is an alphabetic character or an underscore, false otherwise.
+ */
+static bool isAlpha(char c)
+{
+    return (c >= 'a' && c <= 'z') ||
+           (c >= 'A' && c <= 'Z') ||
+           c == '_';
 }
 
 /**
@@ -154,6 +173,104 @@ static void skipWhitespace()
 }
 
 /**
+ * Checks if a given substring matches a keyword and returns the corresponding token type.
+ *
+ * @param start The starting index of the substring in the input string.
+ * @param length The length of the substring.
+ * @param rest The remaining characters of the input string.
+ * @param type The token type to return if the substring matches a keyword.
+ * @return The token type corresponding to the keyword if the substring matches, otherwise TOKEN_IDENTIFIER.
+ */
+static TokenType checkKeyword(int start, int length, const char *rest, TokenType type)
+{
+    // validate strings are of same len first THEN check that
+    // the strings are the SAME
+    if (scanner.current - scanner.start == start + length &&
+        memcmp(scanner.start + start, rest, length) == 0)
+    {
+        return type;
+    }
+
+    return TOKEN_IDENTIFIER;
+}
+
+/**
+ * @brief CREATE THE KEYWORDS FOR YOUR LANGUAGE HERE!!!!
+ *
+ * @return TokenType
+ */
+static TokenType identifierType()
+{
+    switch (scanner.start[0])
+    {
+    case 'a':
+        return checkKeyword(1, 2, "nd", TOKEN_AND);
+    case 'c':
+        return checkKeyword(1, 4, "lass", TOKEN_CLASS);
+    case 'e':
+        return checkKeyword(1, 3, "lse", TOKEN_ELSE);
+    case 'f':
+        if (scanner.current - scanner.start > 1)
+        {
+            switch (scanner.start[1])
+            {
+            case 'a':
+                return checkKeyword(2, 3, "lse", TOKEN_FALSE);
+            case 'o':
+                return checkKeyword(2, 1, "r", TOKEN_FOR);
+            case 'u':
+                return checkKeyword(2, 1, "n", TOKEN_FUN);
+            }
+        }
+        break;
+    case 'i':
+        return checkKeyword(1, 1, "f", TOKEN_IF);
+    case 'n':
+        return checkKeyword(1, 2, "il", TOKEN_NIL);
+    case 'o':
+        return checkKeyword(1, 1, "r", TOKEN_OR);
+    case 'p':
+        return checkKeyword(1, 4, "rint", TOKEN_PRINT);
+    case 'r':
+        return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
+    case 's':
+        return checkKeyword(1, 4, "uper", TOKEN_SUPER);
+    case 't':
+        if (scanner.current - scanner.start > 1)
+        {
+            switch (scanner.start[1])
+            {
+            case 'h':
+                return checkKeyword(2, 2, "is", TOKEN_THIS);
+            case 'r':
+                return checkKeyword(2, 2, "ue", TOKEN_TRUE);
+            }
+        }
+        break;
+    case 'v':
+        return checkKeyword(1, 2, "ar", TOKEN_VAR);
+    case 'w':
+        return checkKeyword(1, 4, "hile", TOKEN_WHILE);
+    }
+    return TOKEN_IDENTIFIER;
+}
+
+/**
+ * Scans for an identifier token.
+ * This function scans characters until it reaches a non-alphanumeric character,
+ * and then returns a token representing the identifier.
+ *
+ * @return The identifier token.
+ */
+static Token identifier()
+{
+    // continue until next char isnt a number or letter
+    while (isAlpha(peek()) || isDigit(peek()))
+        advance();
+    return makeToken(identifierType());
+}
+
+/**
  * Scans and returns a token representing a number.
  * This function scans the input and identifies a number, including any fractional part.
  * It advances the input stream until it reaches the end of the number.
@@ -219,6 +336,9 @@ Token scanToken()
         return makeToken(TOKEN_EOF);
 
     char c = advance();
+
+    if (isAlpha(c))
+        return identifier();
 
     if (isDigit(c))
         return number();
