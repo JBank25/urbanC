@@ -1,5 +1,6 @@
 #include "vm.h"
 
+#include "chunk.h"
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
@@ -91,8 +92,25 @@ static InterpretResult run()
 
 InterpretResult interpret(const char *source)
 {
-    compile(source);
-    return INTERPRET_OK;
+    Chunk chunk; // create new empty chunk
+    initChunk(&chunk);
+
+    // fill chunk w bytecode assuming no errors
+    if (!compile(source, &chunk))
+    {
+        // if errors free chunk and ERROR
+        freeChunk(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+
+    // else compiled chunk will be executed by vm
+    vm.chunk = &chunk;
+    vm.ip = vm.chunk->code;
+
+    InterpretResult result = run();
+
+    freeChunk(&chunk);
+    return result;
 }
 
 void initVM()

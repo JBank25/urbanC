@@ -1,3 +1,3 @@
 #pragma once
 
-void compile(const char *source);
+bool compile(const char *source, Chunk *chunk);
