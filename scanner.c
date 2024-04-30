@@ -7,9 +7,9 @@
 
 typedef struct
 {
-    const char *start;
-    const char *current;
-    int line;
+    const char *start;   // starting char of lexeme
+    const char *current; // char currently on
+    int line;            // line lexeme is on
 } Scanner;
 
 Scanner scanner;
@@ -117,7 +117,7 @@ static Token makeToken(TokenType type)
 {
     Token token;
     token.type = type;
-    token.start = scanner.start;
+    token.start = scanner.start; // recall scanner is tracking these data points
     token.length = (int)(scanner.current - scanner.start);
     token.line = scanner.line;
     return token;
@@ -127,7 +127,7 @@ static Token errorToken(const char *message)
 {
     Token token;
     token.type = TOKEN_ERROR;
-    token.start = message;
+    token.start = message; // points to error message instead of source code
     token.length = (int)strlen(message);
     token.line = scanner.line;
     return token;
@@ -346,38 +346,38 @@ Token scanToken()
     switch (c)
     {
     case '(':
-        return makeToken(TOKEN_LEFT_PAREN);
+        return makeToken(TOKEN_LEFT_PAREN); // single char token
     case ')':
-        return makeToken(TOKEN_RIGHT_PAREN);
+        return makeToken(TOKEN_RIGHT_PAREN); // single char token
     case '{':
-        return makeToken(TOKEN_LEFT_BRACE);
+        return makeToken(TOKEN_LEFT_BRACE); // single char token
     case '}':
-        return makeToken(TOKEN_RIGHT_BRACE);
+        return makeToken(TOKEN_RIGHT_BRACE); // single char token
     case ';':
-        return makeToken(TOKEN_SEMICOLON);
+        return makeToken(TOKEN_SEMICOLON); // single char token
     case ',':
-        return makeToken(TOKEN_COMMA);
+        return makeToken(TOKEN_COMMA); // single char token
     case '.':
-        return makeToken(TOKEN_DOT);
+        return makeToken(TOKEN_DOT); // single char token
     case '-':
-        return makeToken(TOKEN_MINUS);
+        return makeToken(TOKEN_MINUS); // single char token
     case '+':
-        return makeToken(TOKEN_PLUS);
+        return makeToken(TOKEN_PLUS); // single char token
     case '/':
-        return makeToken(TOKEN_SLASH);
+        return makeToken(TOKEN_SLASH); // single char token
     case '*':
-        return makeToken(TOKEN_STAR);
-    case '!':
+        return makeToken(TOKEN_STAR); // single char token
+    case '!':                         // MAYBE double char token
         return makeToken(
             // two char punctionation here != check
             match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
-    case '=':
+    case '=': // MAYBE double char token
         return makeToken(
             match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
-    case '<':
+    case '<': // MAYBE double char token
         return makeToken(
             match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
-    case '>':
+    case '>': // MAYBE double char token
         return makeToken(
             match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
     case '"':

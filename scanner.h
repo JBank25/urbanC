@@ -54,7 +54,7 @@ typedef enum
 
 typedef struct
 {
-    TokenType type;
+    TokenType type; // is token a number? identifier? operator?
     const char *start;
     int length;
     int line;

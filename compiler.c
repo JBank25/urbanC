@@ -309,7 +309,7 @@ static ParseRule *getRule(TokenType type)
 
 bool compile(const char *source, Chunk *chunk)
 {
-    initScanner(source);
+    initScanner(source); // get our scanner ready REPLing
     compilingChunk = chunk;
 
     parser.hadError = false;
