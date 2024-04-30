@@ -55,6 +55,8 @@ static void errorAt(Token *token, const char *message)
     // surpress any further errors if error has already occurred (will be in panicMode)
     if (parser.panicMode)
         return;
+
+    // set panicMode flag in the event more errors occur during compilation
     parser.panicMode = true;
 
     // print where error occurred
@@ -98,7 +100,7 @@ static void advance()
     for (;;)
     {
         parser.current = scanToken();
-        // NO lexical errors, rather soecuak error tokens will be created and left to parser to report
+        // NO lexical errors, rather special error tokens will be created and left to parser to report
         if (parser.current.type != TOKEN_ERROR)
             break;
 
@@ -305,7 +307,7 @@ static ParseRule *getRule(TokenType type)
     return &rules[type];
 }
 
-bool compiler(const char *source, Chunk *chunk)
+bool compile(const char *source, Chunk *chunk)
 {
     initScanner(source);
     compilingChunk = chunk;
