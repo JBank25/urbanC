@@ -324,6 +324,7 @@ static Token string()
     return makeToken(TOKEN_STRING);
 }
 
+// ***************** STAR OF SCANNER SHOW *****************************
 Token scanToken()
 {
     skipWhitespace();
@@ -337,10 +338,10 @@ Token scanToken()
 
     char c = advance();
 
-    if (isAlpha(c))
+    if (isAlpha(c)) // check for identifiers
         return identifier();
 
-    if (isDigit(c))
+    if (isDigit(c)) // check if token is digit, bit simpler than adding all digits to switch
         return number();
 
     switch (c)
@@ -380,7 +381,7 @@ Token scanToken()
     case '>': // MAYBE double char token
         return makeToken(
             match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
-    case '"':
+    case '"': //
         return string();
     }
 
