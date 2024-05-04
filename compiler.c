@@ -207,7 +207,8 @@ static void grouping()
 static void number()
 {
     double value = strtod(parser.previous.start, NULL);
-    emitConstant(value);
+    // wrap it in Value before storing it in constant table
+    emitConstant(NUMBER_VAL(value));
 }
 
 /**

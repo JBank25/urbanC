@@ -2,7 +2,8 @@
 
 #include "common.h"
 
-// Data types we'll support
+// Data types we'll support. Will serve as the tag
+// in the "tagged" union
 typedef enum
 {
     VAL_BOOL,
@@ -21,13 +22,18 @@ typedef struct
     } as; // reads nicely could be as number, as boolean, as string, etc
 } Value;
 
+// Macros to check an urbanC Values type
 #define IS_BOOL(value) ((value).type == VAL_BOOL)
 #define IS_NIL(value) ((value).type == VAL_NIL)
 #define IS_NUMBER(value) ((value).type == VAL_NUMBER)
 
+// Give Value tyoe produce a C type. Calls here MUST be guarded
+// behing the IS_* macros
 #define AS_BOOL(value) ((value).as.boolean)
 #define AS_NUMBER(value) ((value).as.number)
 
+// Macros to promote C val to urbanC val. Takes C type and
+// produces the appropriate Value with tag and unerlying val
 #define BOOL_VAL(value) ((Value){VAL_BOOL, {.boolean = value}})
 #define NIL_VAL ((Value){VAL_NIL, {.number = 0}})
 #define NUMBER_VAL(value) ((Value){VAL_NUMBER, {.number = value}})

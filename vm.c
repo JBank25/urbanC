@@ -6,12 +6,29 @@
 #include "debug.h"
 #include "value.h"
 
+#include <stdarg.h>
+
 // Globally declared virtual machine
 VM vm;
 
 static void resetStack()
 {
     vm.stackTop = vm.stack; // reset stack ptr to first element
+}
+
+// VARIADIC OOOOOOOOOHHHHHHHHH
+static void runtimeError(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);         // create ptr to spot on stack where variable args were stored
+    vfprintf(stderr, format, args); // this is what printf uses under the hood too
+    va_end(args);                   // for portability
+    fputs("\n", stderr);
+
+    size_t instruction = vm.ip - vm.chunk->code - 1;
+    int line = vm.chunk->lines[instruction];
+    fprintf(stderr, "[line %d] in script\n", line);
+    resetStack();
 }
 
 /**
@@ -63,6 +80,14 @@ static InterpretResult run()
             break;
         }
         case OP_NEGATE:
+            // ensure Value type being used for negation is a number
+            if (!IS_NUMBER(peek(0)))
+            {
+                runtimeError("Operand must be a number.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            push(NUMBER_VAL(-AS_NUMBER(pop())));
+            break;
             push(-pop());
             break;
         case OP_ADD:
@@ -132,4 +157,10 @@ Value pop()
 {
     vm.stackTop--;       // move back once, recall the PREVIOUS element is the top value in stack
     return *vm.stackTop; // return "popped" value
+}
+
+static Value peek(int distance)
+{
+    // return value froms stakc but don't pop it
+    return vm.stackTop[-1 - distance];
 }
