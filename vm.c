@@ -31,6 +31,24 @@ static void runtimeError(const char *format, ...)
     resetStack();
 }
 
+static Value peek(int distance)
+{
+    // return value froms stakc but don't pop it
+    return vm.stackTop[-1 - distance];
+}
+
+/**
+ * @brief nil and false are falsey, all other values behave like true
+ *
+ * @param value
+ * @return true
+ * @return false
+ */
+static bool isFalsey(Value value)
+{
+    return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
+}
+
 /**
  * @brief
  * MOST important function by far in program. Majority of execution will
@@ -44,12 +62,17 @@ static InterpretResult run()
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 // funny looking syntax here, but gives you a way to contain multiple statements
 // inside a block that also permits a semicolon at the end.
-#define BINARY_OP(op)     \
-    do                    \
-    {                     \
-        double b = pop(); \
-        double a = pop(); \
-        push(a op b);     \
+#define BINARY_OP(valueType, op)                        \
+    do                                                  \
+    {                                                   \
+        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) \
+        {                                               \
+            runtimeError("Operands must be numbers.");  \
+            return INTERPRET_RUNTIME_ERROR;             \
+        }                                               \
+        double b = AS_NUMBER(pop());                    \
+        double a = AS_NUMBER(pop());                    \
+        push(valueType(a op b));                        \
     } while (false)
 
     for (;;)
@@ -79,6 +102,15 @@ static InterpretResult run()
             printf("\n");
             break;
         }
+        case OP_NIL:
+            push(NIL_VAL);
+            break;
+        case OP_TRUE:
+            push(BOOL_VAL(true));
+            break;
+        case OP_FALSE:
+            push(BOOL_VAL(false));
+            break;
         case OP_NEGATE:
             // ensure Value type being used for negation is a number
             if (!IS_NUMBER(peek(0)))
@@ -88,19 +120,20 @@ static InterpretResult run()
             }
             push(NUMBER_VAL(-AS_NUMBER(pop())));
             break;
-            push(-pop());
-            break;
         case OP_ADD:
-            BINARY_OP(+);
+            BINARY_OP(NUMBER_VAL, +);
             break;
         case OP_SUBTRACT:
-            BINARY_OP(-);
+            BINARY_OP(NUMBER_VAL, -);
             break;
         case OP_MULTIPLY:
-            BINARY_OP(*);
+            BINARY_OP(NUMBER_VAL, *);
             break;
         case OP_DIVIDE:
-            BINARY_OP(/);
+            BINARY_OP(NUMBER_VAL, /);
+            break;
+        case OP_NOT:
+            push(BOOL_VAL(isFalsey(pop())));
             break;
         case OP_RETURN:
         {
@@ -157,10 +190,4 @@ Value pop()
 {
     vm.stackTop--;       // move back once, recall the PREVIOUS element is the top value in stack
     return *vm.stackTop; // return "popped" value
-}
-
-static Value peek(int distance)
-{
-    // return value froms stakc but don't pop it
-    return vm.stackTop[-1 - distance];
 }

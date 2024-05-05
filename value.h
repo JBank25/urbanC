@@ -38,8 +38,6 @@ typedef struct
 #define NIL_VAL ((Value){VAL_NIL, {.number = 0}})
 #define NUMBER_VAL(value) ((Value){VAL_NUMBER, {.number = value}})
 
-typedef double Value;
-
 /**
  * Consider an snippet of code that looks like:
  * print 1;
