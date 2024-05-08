@@ -66,3 +66,30 @@ void printValue(Value value)
         break;
     }
 }
+
+// Some languages have “implicit conversions” where values of different types
+// may be considered equal if one can be converted to the other’s type.
+// For example, the number 0 is equivalent to the string “0” in JavaScript.
+// This looseness was a large enough source of pain that JS added a separate
+// “strict equality” operator, ===.
+bool valueEquals(Value a, Value b)
+{
+    // if types not the same, def not equal
+    if (a.type != b.type)
+    {
+        return false;
+    }
+
+    // else unwrap the vals and compare them directly
+    switch (a.type)
+    {
+    case VAL_BOOL:
+        return AS_BOOL(a) == AS_BOOL(b);
+    case VAL_NIL:
+        return true;
+    case VAL_NUMBER:
+        return AS_NUMBER(a) == AS_NUMBER(b);
+    default:
+        return false;
+    }
+}

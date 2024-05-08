@@ -111,6 +111,17 @@ static InterpretResult run()
         case OP_FALSE:
             push(BOOL_VAL(false));
             break;
+        case OP_EQUAL:
+            Value b = pop();
+            Value a = pop();
+            push(BOOL_VAL(valueEquals(a, b))); // can == on ANY pair of objects
+            break;
+        case OP_GREATER:
+            BINARY_OP(BOOL_VAL, >);
+            break;
+        case OP_LESS:
+            BINARY_OP(BOOL_VAL, <);
+            break;
         case OP_NEGATE:
             // ensure Value type being used for negation is a number
             if (!IS_NUMBER(peek(0)))
