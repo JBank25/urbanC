@@ -5,6 +5,9 @@
 #define MIN_ARR_THRESHOLD 8
 #define ARR_GROWTH_FACTOR 2
 
+#define ALLOCATE(type, count) \
+    (type *)reallocate(NULL, 0, sizeof(type) * (count))
+
 /**
  * Macro to calculate the new capacity for dynamic memory growth.
  * If the current capacity is less than 8 (a byte), the new capacity will be 8.

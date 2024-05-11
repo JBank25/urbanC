@@ -247,6 +247,16 @@ static void number()
 }
 
 /**
+ * @brief When parser hits string token this function will be called
+ *
+ */
+static void string()
+{
+    // The + 1 and - 2 parts trim the leading and trailing quotation marks
+    emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
+}
+
+/**
  * @brief PREFIX EXPRESSION
  *
  */
