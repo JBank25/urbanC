@@ -4,9 +4,13 @@
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
+#include "memory.h"
+#include "object.h"
 #include "value.h"
 
 #include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 
 // Globally declared virtual machine
 VM vm;
@@ -47,6 +51,21 @@ static Value peek(int distance)
 static bool isFalsey(Value value)
 {
     return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
+}
+
+static void concatenate()
+{
+    ObjString *b = AS_STRING(pop());
+    ObjString *a = AS_STRING(pop());
+
+    int length = a->length + b->length;             // calculate length of the two strings to be concatenated
+    char *chars = ALLOCATE(char, length + 1);       // allocate char array for the whole new string
+    memcpy(chars, a->chars, a->length);             // copy chars from first string into allocated memory
+    memcpy(chars + a->length, b->chars, b->length); // same process for second string
+    chars[length] = '\0';                           // NULL TERMINATE YOUR STRINGS
+
+    ObjString *result = takeString(chars, length);
+    push(OBJ_VAL(result));
 }
 
 /**
@@ -122,6 +141,27 @@ static InterpretResult run()
         case OP_LESS:
             BINARY_OP(BOOL_VAL, <);
             break;
+        case OP_ADD:
+        {
+            // String contatencation SUPPORTED NICE
+            if (IS_STRING(peek(0)) && IS_STRING(peek(1)))
+            {
+                concatenate();
+            }
+            else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
+            {
+                double b = AS_NUMBER(pop());
+                double a = AS_NUMBER(pop());
+                push(NUMBER_VAL(a + b));
+            }
+            else
+            {
+                runtimeError(
+                    "Operands must be two numbers or two strings.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            break;
+        }
         case OP_NEGATE:
             // ensure Value type being used for negation is a number
             if (!IS_NUMBER(peek(0)))
