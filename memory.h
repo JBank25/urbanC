@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include "memory.h"
 
 #define MIN_ARR_THRESHOLD 8
 #define ARR_GROWTH_FACTOR 2
@@ -18,6 +19,8 @@
  */
 #define GROW_CAPACITY(capacity) \
     ((capacity) < MIN_ARR_THRESHOLD ? MIN_ARR_THRESHOLD : (capacity) * ARR_GROWTH_FACTOR)
+
+#define FREE(type, pointer) reallocate(pointer, sizeof(type), 0)
 
 /**
  * @brief Macro for freeing an array of a specified type.
@@ -53,3 +56,4 @@
                        sizeof(type) * (newCount))
 
 void *reallocate(void *pointer, size_t oldSize, size_t newSize);
+void freeObjects();

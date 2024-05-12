@@ -14,6 +14,7 @@ typedef struct
     // points at element just PAST element containing top, stack is EMPTY when pointing
     // at 0 element in array
     Value *stackTop;
+    Obj *objects; // VM store a ptr to head of LL
 } VM;
 
 typedef enum
@@ -22,6 +23,8 @@ typedef enum
     INTERPRET_COMPILE_ERROR,
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
+
+extern VM vm;
 
 void initVM();
 void freeVM();

@@ -223,11 +223,13 @@ InterpretResult interpret(const char *source)
 
 void initVM()
 {
+    vm.objects = NULL;
     resetStack(); // VM state must be initialized
 }
 
 void freeVM()
 {
+    freeObjects();
 }
 
 void push(Value value)

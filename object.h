@@ -18,6 +18,7 @@ typedef enum
 struct Obj
 {
     ObjType type;
+    struct Obj *next; // an INTRUSIVE list, every obj gets a ptr to next
 };
 
 struct ObjString
