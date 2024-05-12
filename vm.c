@@ -131,10 +131,12 @@ static InterpretResult run()
             push(BOOL_VAL(false));
             break;
         case OP_EQUAL:
+        {
             Value b = pop();
             Value a = pop();
             push(BOOL_VAL(valueEquals(a, b))); // can == on ANY pair of objects
             break;
+        }
         case OP_GREATER:
             BINARY_OP(BOOL_VAL, >);
             break;
@@ -170,9 +172,6 @@ static InterpretResult run()
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(NUMBER_VAL(-AS_NUMBER(pop())));
-            break;
-        case OP_ADD:
-            BINARY_OP(NUMBER_VAL, +);
             break;
         case OP_SUBTRACT:
             BINARY_OP(NUMBER_VAL, -);
@@ -239,6 +238,6 @@ void push(Value value)
 
 Value pop()
 {
-    vm.stackTop--;       // move back once, recall the PREVIOUS element is the top value in stack
-    return *vm.stackTop; // return "popped" value
+    vm.stackTop--;
+    return *vm.stackTop;
 }

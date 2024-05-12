@@ -31,7 +31,7 @@ typedef struct
 #define IS_BOOL(value) ((value).type == VAL_BOOL)
 #define IS_NIL(value) ((value).type == VAL_NIL)
 #define IS_NUMBER(value) ((value).type == VAL_NUMBER)
-#define IS_OBJ(value) ((value).type == VALL_OBJ)
+#define IS_OBJ(value) ((value).type == VAL_OBJ)
 
 // Give Value tyoe produce a C type. Calls here MUST be guarded
 // behing the IS_* macros
@@ -44,7 +44,7 @@ typedef struct
 #define BOOL_VAL(value) ((Value){VAL_BOOL, {.boolean = value}})
 #define NIL_VAL ((Value){VAL_NIL, {.number = 0}})
 #define NUMBER_VAL(value) ((Value){VAL_NUMBER, {.number = value}})
-#define OBJ_VAL(value) ((Value){VAL_OBJ, {.obj = (Obj *)object}})
+#define OBJ_VAL(object) ((Value){VAL_OBJ, {.obj = (Obj *)object}})
 
 /**
  * Consider an snippet of code that looks like:

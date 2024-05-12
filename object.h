@@ -27,6 +27,14 @@ struct ObjString
     char *chars; // ptr to heap allocated aray
 };
 
+/**
+ * REEAAAALLLLLYYYYYY DOOOOO NOOOOOOTTTTTT LLLLLLIIIKKKKKKEEEEEE TTTTTTHHHHHHHHIIIIIIIISSSSSS
+ */
+static inline bool isObjType(Value value, ObjType type)
+{
+    return IS_OBJ(value) && AS_OBJ(value)->type == type;
+}
+
 ObjString *takeString(char *chars, int length);
 ObjString *copyString(const char *chars, int length);
 void printObject(Value value);
