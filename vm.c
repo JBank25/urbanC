@@ -97,7 +97,7 @@ static InterpretResult run()
     for (;;)
     {
 #ifdef DEBUG_TRACE_EXECUTION
-        printf("          ");
+        printf("Num Values on stack: %lu\n", (vm.stackTop - vm.stack));
         for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
         {
             printf("[ ");

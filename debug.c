@@ -15,7 +15,8 @@ static int simpleInstruction(const char *name, int offset)
 static int constantInstruction(const char *name, Chunk *chunk, int offset)
 {
     uint8_t constant = chunk->code[offset + 1];
-    printf("%-16s %4d '", name, constant);
+    printf("Instruction name: %-16s At Offset: %4d ", name, constant);
+    printf("Value: '");
     printValue(chunk->constants.values[constant]);
     printf("'\n");
     return offset + 2;
@@ -54,7 +55,7 @@ void disassembleChunk(Chunk *chunk, const char *name)
 int disassembleInstruction(Chunk *chunk, int offset)
 {
     // print byte offset at a given instruction
-    printf("%04d ", offset);
+    printf("Byte offset: %04d ", offset);
     if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1])
     {
         printf("   | ");

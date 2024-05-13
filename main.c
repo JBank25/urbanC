@@ -71,20 +71,20 @@ int main(int argc, const char *argv[])
     initVM();
 
     // no args then drop into REPL
-    if (argc == 1)
-    {
-        repl();
-    }
+    // if (argc == 1)
+    // {
+    //     repl();
+    // }
     // Should be path to a script to run
-    else if (argc == 2)
-    {
-        // runFile(argv[1]);
-    }
-    else
-    {
-        fprintf(stderr, "Usage: clox [path]\n");
-        exit(64);
-    }
+    // else if (argc == 2)
+    // {
+    runFile("./test.txt");
+    // }
+    // else
+    // {
+    //     fprintf(stderr, "Usage: clox [path]\n");
+    //     exit(64);
+    // }
 
     freeVM();
     return 0;

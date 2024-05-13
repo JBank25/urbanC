@@ -131,6 +131,12 @@ static void emitReturn()
     emitByte(OP_RETURN);
 }
 
+/**
+ * @brief
+ *
+ * @param value
+ * @return uint8_t
+ */
 static uint8_t makeConstant(Value value)
 {
     int constant = addConstant(currentChunk(), value);
