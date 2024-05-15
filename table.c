@@ -52,6 +52,42 @@ static Entry *findEntry(Entry *entries, int capacity, ObjString *key)
 }
 
 /**
+ * Adjusts the capacity of the table to the specified value. This function ALSO copies over the
+ * existing values from the hash table into the new one. Recall that in our hash function we
+ * take the hashed key % array size to get the index. Meaning when the array size changes so too
+ * do the buckets we should allocate them into.
+ *
+ * @param table The table to adjust the capacity of.
+ * @param capacity The new capacity of the table.
+ */
+static void adjustCapacity(Table *table, int capacity)
+{
+    Entry *entries = ALLOCATE(Entry, capacity);
+    for (int i = 0; i < capacity; i++)
+    {
+        entries[i].key = NULL;
+        entries[i].value = NIL_VAL;
+    }
+
+    // Copying over ALL the values in the hash table before we adjust capacity to the
+    // new hash table
+    for (int i = 0; i < table->capacity; i++)
+    {
+        Entry *entry = &table->entries[i];
+        if (entry->key == NULL) // if we find an empty bucket, continue nothing to store here
+            continue;
+
+        // for buckets that do have values we find the correct bucket for the adjusted capacity table
+        Entry *dest = findEntry(entries, capacity, entry->key);
+        dest->key = entry->key; // and store the kay and value there
+        dest->value = entry->value;
+    }
+
+    table->entries = entries;   // store the array
+    table->capacity = capacity; // and its capacity into hash tables struct
+}
+
+/**
  * @brief Adds a given key/value to a hash table. If the key already exists
  * in the table then it is overridden
  *
@@ -84,4 +120,23 @@ bool tableSet(Table *table, ObjString *key, Value value)
     entry->key = key;     // populate the hash table with the key
     entry->value = value; // and value
     return isNewKey;
+}
+
+/**
+ * @brief Copies all the entries of one hash table into another.
+ *
+ * @param from - Hash table we are copying values from
+ * @param to - Hash table we are bopying values to
+ */
+void tableAddAll(Table *from, Table *to)
+{
+    for (int i = 0; i < from->capacity; i++)
+    {
+        Entry *entry = &from->entries[i];
+        if (entry->key != NULL)
+        {
+            // utilize table set. "to" is the table being added to, key and value are what will be stored there
+            tableSet(to, entry->key, entry->value);
+        }
+    }
 }
