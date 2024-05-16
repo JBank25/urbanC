@@ -37,18 +37,59 @@ static Entry *findEntry(Entry *entries, int capacity, ObjString *key)
 {
     // modulo to map key's hash code into an index within the arrays bounds
     uint32_t index = key->hash % capacity;
+    Entry *tombstone = NULL;
     for (;;) // <- loop to probe in event of collision, no infinite loop due load factor checking
     {
         // grab the entry
         Entry *entry = &entries[index];
-        // if key already exists OR the entry is empty, return it to be populated, updated, etc
-        if (entry->key == key || entry->key == NULL)
+        if (entry->key == NULL) // this could mean tombstone is at this entry or it is empty
         {
+            if (IS_NIL(entry->value))
+            {
+                // Empty entry. Return the tombstone if we have found one so we can reuse that
+                // reclaimed space, else just return the entry itself
+                return tombstone != NULL ? tombstone : entry;
+            }
+            else
+            {
+                // We found a tombstone.
+                if (tombstone == NULL)
+                    tombstone = entry; // set the tombstone value for later use, we may end up returning it
+            }
+        }
+        else if (entry->key == key)
+        {
+            // We found the key.
             return entry;
         }
         // if collision occurred, start probing
         index = (index + 1) % capacity;
     }
+}
+
+/**
+ * @brief Find an entry in the given hash table. If the entry exists, return true and populate
+ * value ptr with the correct value. Else return False
+ *
+ * @param table - hash table we should search in
+ * @param key - key being used to search in the hash table
+ * @param value - value we should populate w the correct ptr if it exists in the table
+ * @return true - if a value exists in "table" for "key"
+ * @return false - else
+ */
+bool tableGet(Table *table, ObjString *key, Value *value)
+{
+    // if no entries are populated yet, then the "key" definitely doesn'y exist in "table"
+    if (table->count == 0)
+        return false;
+    // search for the entry in "table" given the "key" and "capacity"
+    Entry *entry = findEntry(table->entries, table->capacity, key);
+    if (entry->key == NULL)
+        return false;
+
+    // return true and the value if it exists
+    *value = entry->value;
+    return true;
 }
 
 /**
@@ -120,6 +161,35 @@ bool tableSet(Table *table, ObjString *key, Value value)
     entry->key = key;     // populate the hash table with the key
     entry->value = value; // and value
     return isNewKey;
+}
+
+/**
+ * Deletes an entry from the table based on the given key. Note that we mark deleted entries
+ * with a "tombstone". This is so if when we are searching for an entry using the probe sequence
+ * we do not prematurely give up the search. Just setting deleted entries to NULL is kinda like
+ * removing a node from a LL and not connecting the nodes that came before and after it (creating a
+ * disjoint chain).
+ *
+ * @param table The table from which to delete the entry.
+ * @param key The key of the entry to delete.
+ * @return true if the entry was successfully deleted, false otherwise.
+ */
+bool tableDelete(Table *table, ObjString *key)
+{
+    // if no entries then nothing to delete
+    if (table->count == 0)
+        return false;
+
+    // Find the entry.
+    Entry *entry = findEntry(table->entries, table->capacity, key);
+    // if no entry exists then nothing to delete
+    if (entry->key == NULL)
+        return false;
+
+    // Place a tombstone in the entry.
+    entry->key = NULL;
+    entry->value = BOOL_VAL(true);
+    return true;
 }
 
 /**
