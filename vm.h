@@ -14,7 +14,8 @@ typedef struct
     // points at element just PAST element containing top, stack is EMPTY when pointing
     // at 0 element in array
     Value *stackTop;
-    Obj *objects; // VM store a ptr to head of LL
+    Table strings; // STRING INTERNING
+    Obj *objects;  // VM store a ptr to head of LL
 } VM;
 
 typedef enum
