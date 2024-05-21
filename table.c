@@ -11,7 +11,7 @@
 
 void initTable(Table *table)
 {
-    table->count = 0;
+    table->count = 0; // Number of entries + number of tombstones
     table->capacity = 0;
     table->entries = NULL;
 }
@@ -110,6 +110,9 @@ static void adjustCapacity(Table *table, int capacity)
         entries[i].value = NIL_VAL;
     }
 
+    // tombstones are not copied over to new table. Count will need to be recalculated so we reset it
+    table->count = 0;
+
     // Copying over ALL the values in the hash table before we adjust capacity to the
     // new hash table
     for (int i = 0; i < table->capacity; i++)
@@ -122,6 +125,7 @@ static void adjustCapacity(Table *table, int capacity)
         Entry *dest = findEntry(entries, capacity, entry->key);
         dest->key = entry->key; // and store the kay and value there
         dest->value = entry->value;
+        table->count++; // increment count every time we find non-tombstone entry
     }
 
     table->entries = entries;   // store the array
@@ -153,7 +157,8 @@ bool tableSet(Table *table, ObjString *key, Value value)
     Entry *entry = findEntry(table->entries, table->capacity, key);
 
     bool isNewKey = (entry->key == NULL); // true if the key/val is new
-    if (isNewKey)
+    //
+    if (isNewKey && IS_NIL(entry->value))
     {
         table->count++; // only increase count when it is a new ley/val
     }
