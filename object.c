@@ -3,6 +3,7 @@
 
 #include "memory.h"
 #include "object.h"
+#include "table.h"
 #include "value.h"
 #include "vm.h"
 
@@ -43,12 +44,21 @@ static uint32_t hashString(const char *key, int length)
 ObjString *takeString(char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
+    ObjString *interned = tableFindString(&vm.strings, chars, length, hash); // look for string
+    if (interned != NULL)                                                    // if we find it
+    {
+        FREE_ARRAY(char, chars, length + 1); // free memory for the string that was passed int
+        return interned;                     // and return the FOUND string
+    }
     return allocateString(chars, length, hash);
 }
 
 ObjString *copyString(const char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
+    ObjString *interned = tableFindString(&vm.strings, chars, length, hash);
+    if (interned != NULL)
+        return interned;
     char *heapChars = ALLOCATE(char, length + 1); // allocate new arr on heap big enough for string and null terminator
     memcpy(heapChars, chars, length);             // copy chars
     heapChars[length] = '\0';                     // copy chars
