@@ -217,9 +217,9 @@ void tableAddAll(Table *from, Table *to)
 }
 
 /**
- * @brief
+ * @brief find an entry in the string table
  *
- * @param table
+ * @param table - table to search through
  * @param chars - raw character array of the key we are looking for
  * @param length
  * @param hash
