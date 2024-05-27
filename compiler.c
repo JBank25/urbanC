@@ -36,6 +36,10 @@ typedef enum
 
 typedef void (*ParseFn)();
 
+/**
+ * Struct which we use to wrap the three properties contained in a single
+ * row of the parser table.
+ */
 typedef struct
 {
     ParseFn prefix;
@@ -339,6 +343,12 @@ static void unary()
     }
 }
 
+/**
+ * This is a table that will allow us to, for a given token type, find the:
+ *      The function to compile a PREFIX expression starting w/ a token of that type
+ *      The functiom to copmile an INFIX expression whose left operand if followed by a token of that type
+ *      The precedence of an INFIX expression that uses that token as an operator
+ */
 ParseRule rules[] = {
     [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
@@ -407,6 +417,12 @@ static void parsePrecedence(Precedence precedence)
     }
 }
 
+/**
+ * @brief Get the Rule object
+ *
+ * @param type - type (TOKEN_DOT, TOKEN_MINUS, etc) used to index into the rules array
+ * @return ParseRule*
+ */
 static ParseRule *getRule(TokenType type)
 {
     return &rules[type];
