@@ -14,11 +14,17 @@ typedef struct
 
 Scanner scanner;
 
+/**
+ * @brief Our scanner has a state, thus we should initialize it.
+ *
+ * @param source - This is the very first char on the very first line of the source code that
+ *                 will be scanned
+ */
 void initScanner(const char *source)
 {
-    scanner.start = source;
+    scanner.start = source; // initialize our char ptrs to first char
     scanner.current = source;
-    scanner.line = 1;
+    scanner.line = 1; // we will be pointing to the first line upon starting interpreter
 }
 
 /**
@@ -92,23 +98,34 @@ static char peekNext()
 /**
  * Checks if the current character matches the expected character.
  * If the current character does not match the expected character, the function returns false.
- * If the current character matches the expected character, the function advances the scanner's current position and returns true.
+ * If the current character matches the expected character, the function advances the
+ * scanner's current position and returns true.
+ *
+ * This function will be used by the scanner in scanToken() to determine if certain chars
+ * like ! or = are part of a large token like != or == OR if they are simply ! or =
  *
  * @param expected The character to match against the current character.
  * @return True if the current character matches the expected character, false otherwise.
  */
 static bool match(char expected)
 {
+    // edge case, check that we're not at end yet
     if (isAtEnd())
         return false;
+    // if the char scanner is currently pointed at != expected return false
     if (*scanner.current != expected)
         return false;
+    // else increment scanner to next char and return true
     scanner.current++;
     return true;
 }
 
 /**
- * Creates a token of the specified type.
+ * Creates a token of the specified type. This function will use the
+ * scanner and initialize the new token using scanner.start to get the
+ * ptr to the first char of the new token, scanner.current to get the end
+ * of the current token, and scanner.line to set the line field within
+ * the new token.
  *
  * @param type The type of the token.
  * @return The created token.
@@ -123,6 +140,15 @@ static Token makeToken(TokenType type)
     return token;
 }
 
+/**
+ * @brief Nearly identical to the makeToken fucntion, EXCEPT, this one
+ * is called when an error during scanning has occurred. Thus we will
+ * populated this token with an error message and the appropriate values
+ * for length, start, etc.
+ *
+ * @param message
+ * @return Token
+ */
 static Token errorToken(const char *message)
 {
     Token token;
@@ -325,9 +351,15 @@ static Token string()
 }
 
 // ***************** STAR OF SCANNER SHOW *****************************
+/**
+ * @brief - This function will start at a new token when called.
+ *
+ * @return Token
+ */
 Token scanToken()
 {
     skipWhitespace();
+
     // Each call to this func scans a complete token. Guaranteed to be at
     // beginning of a new token when we enter
     scanner.start = scanner.current;

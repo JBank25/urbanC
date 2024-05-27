@@ -54,10 +54,10 @@ typedef enum
 
 typedef struct
 {
-    TokenType type; // is token a number? identifier? operator?
-    const char *start;
-    int length;
-    int line;
+    TokenType type;    // Tells us type of token. Is token a number? identifier? operator?
+    const char *start; // ptr to first char in the original source string that is our token
+    int length;        // length in chars of the token
+    int line;          // line number associated with the token
 } Token;
 
 void initScanner(const char *source);
