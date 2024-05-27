@@ -120,6 +120,30 @@ static void consume(TokenType type, const char *message)
     errorAtCurrent(message);
 }
 
+/**
+ * @brief Return true if current token has given type
+ *
+ * @param type - token type we are checking for
+ * @return true
+ * @return false
+ */
+static bool check(TokenType type)
+{
+    return parser.current.type == type;
+}
+
+static bool match(TokenType type)
+{
+    // if current token has given type, consume it and return true
+    // else return false
+    if (!check(type))
+    {
+        return false;
+    }
+    advance();
+    return true;
+}
+
 static void emitByte(uint8_t byte)
 {
     // write opcode or operand to prev line so runtime errors are associated w it
@@ -172,6 +196,8 @@ static void endCompiler()
 }
 
 static void expression();
+static void statement();
+static void declaration();
 static ParseRule *getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
@@ -240,6 +266,29 @@ static void expression()
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
+static void printStatement()
+{
+    expression();
+    consume(TOKEN_SEMICOLON, "Expect ';' after value.");
+    emitByte(OP_PRINT);
+}
+
+/**
+ * @brief Compile a single declaration
+ *
+ */
+static void declaration()
+{
+    statement();
+}
+
+static void statement()
+{
+    if (match(TOKEN_PRINT))
+    {
+        printStatement();
+    }
+}
 static void grouping()
 {
     expression();
@@ -372,9 +421,12 @@ bool compile(const char *source, Chunk *chunk)
     parser.panicMode = false;
 
     advance();
-    expression();
-    // expect to be at end of source code after we compile
-    consume(TOKEN_EOF, "Expect end of expression.");
+
+    while (!match(TOKEN_EOF))
+    {
+        declaration();
+    }
+
     endCompiler();
     // return false if an error occurred
     return !parser.hadError;
