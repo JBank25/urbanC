@@ -167,6 +167,7 @@ static void emitReturn()
  */
 static uint8_t makeConstant(Value value)
 {
+    // add value to constant array
     int constant = addConstant(currentChunk(), value);
     if (constant > UINT8_MAX)
     {
@@ -299,8 +300,13 @@ static void grouping()
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
+/**
+ * @brief This function is used to compile number literals.
+ *
+ */
 static void number()
 {
+    // convert the value at parser.previous.start to a double
     double value = strtod(parser.previous.start, NULL);
     // wrap it in Value before storing it in constant table
     emitConstant(NUMBER_VAL(value));
