@@ -226,11 +226,17 @@ static void declaration();
 static ParseRule *getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
+static uint8_t identifierConstant(Token *name)
+{
+    char *newString = copyString(name->start, name->length);
+    uint8_t strindIdxConstTable = makeConstant(OBJ_VAL(newString));
+    return stringIdxConstTable;
+}
+
 static uint8_t parseVariable(const char *errorMessage)
 {
     consume(TOKEN_IDENTIFIER, errorMessage);
-    //    return identifierConstant(&parser.previous);
-    return 1;
+    return identifierConstant(&parser.previous);
 }
 
 static void binary()
