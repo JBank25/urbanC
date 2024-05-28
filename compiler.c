@@ -97,6 +97,10 @@ static void errorAtCurrent(const char *message)
     errorAt(&parser.current, message);
 }
 
+/**
+ * @brief Save current token in parser to previous. Then grab NEXT token using
+ *
+ */
 static void advance()
 {
     // save current token
@@ -104,6 +108,7 @@ static void advance()
 
     for (;;)
     {
+        // grab next token and set parsers current token to it
         parser.current = scanToken();
         // NO lexical errors, rather special error tokens will be created and left to parser to report
         if (parser.current.type != TOKEN_ERROR)
@@ -142,11 +147,20 @@ static bool check(TokenType type)
     return parser.current.type == type;
 }
 
+/**
+ * @brief Check if current token is of type. Return true and advance to next
+ * token if it is, else return false
+ *
+ * @param type - TokenType we are checking the current token in parser for
+ * @return true
+ * @return false
+ */
 static bool match(TokenType type)
 {
     // if current token has given type, consume it and return true
     // else return false
-    if (!check(type))
+    bool isCurTokenType = check(type);
+    if (!isCurTokenType)
     {
         return false;
     }
@@ -294,7 +308,7 @@ static void varDeclaration()
     uint8_t global = parseVariable("Expect variable name.");
 
     // look for '=' followed by initializer expression
-    if (match(TOKEN_EQUAL))
+    if (match(TOKEN_EQUAL)) // will advance to next token if true
     {
         expression();
     }
