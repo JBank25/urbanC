@@ -66,7 +66,7 @@ static bool isAtEnd()
  *
  * @return The character at the previous position.
  */
-static char advance()
+static char advanceScanner()
 {
     scanner.current++;
     return scanner.current[-1];
@@ -174,18 +174,18 @@ static void skipWhitespace()
         case ' ':
         case '\r':
         case '\t':
-            advance();
+            advanceScanner();
             break;
         case '\n':
             scanner.line++;
-            advance();
+            advanceScanner();
             break;
         case '/':
             if (peekNext() == '/')
             {
                 // A comment goes until the end of the line.
                 while (peek() != '\n' && !isAtEnd())
-                    advance();
+                    advanceScanner();
             }
             else
             {
@@ -292,8 +292,16 @@ static Token identifier()
 {
     // continue until next char isnt a number or letter
     while (isAlpha(peek()) || isDigit(peek()))
-        advance();
-    return makeToken(identifierType());
+        advanceScanner();
+    /*
+    grab token type. if the scanner held 'print' for ex.
+    then currScannerTokenType should be TOKEN_PRINT. Check identifierType
+    for further examples
+    */
+    TokenType currScannerTokenType = identifierType();
+    // create a NEW identifier token
+    Token identifierToken = makeToken(currScannerTokenType);
+    return identifierToken;
 }
 
 /**
@@ -305,20 +313,21 @@ static Token identifier()
  */
 static Token number()
 {
+    // move scanner along until non-digit char occurs
     while (isDigit(peek()))
-        advance();
+        advanceScanner();
 
     // Look for a fractional part.
     if (peek() == '.' && isDigit(peekNext()))
     {
         // Consume the ".".
-        advance();
-
+        advanceScanner();
+        // move scanner along until non-digit char occurs
         while (isDigit(peek()))
-            advance();
+            advanceScanner();
     }
-
-    return makeToken(TOKEN_NUMBER);
+    Token newNumToken = makeToken(TOKEN_NUMBER);
+    return newNumToken;
 }
 
 /**
@@ -339,14 +348,14 @@ static Token string()
         // support multi-line strings
         if (peek() == '\n')
             scanner.line++;
-        advance();
+        advanceScanner();
     }
     // if end reached, no closing " was found ERROR
     if (isAtEnd())
         return errorToken("Unterminated string.");
 
     // The closing quote.
-    advance();
+    advanceScanner();
     return makeToken(TOKEN_STRING);
 }
 
@@ -368,7 +377,8 @@ Token scanToken()
     if (isAtEnd())
         return makeToken(TOKEN_EOF);
 
-    char c = advance();
+    // advance the scanner by one token, c will hold first char at scanner.start
+    char c = advanceScanner();
 
     if (isAlpha(c)) // check for identifiers
         return identifier();

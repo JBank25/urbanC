@@ -113,6 +113,12 @@ static void advance()
     }
 }
 
+/**
+ * @brief
+ *
+ * @param type
+ * @param message
+ */
 static void consume(TokenType type, const char *message)
 {
     if (parser.current.type == type)
@@ -206,6 +212,13 @@ static void declaration();
 static ParseRule *getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
+static uint8_t parseVariable(const char *errorMessage)
+{
+    consume(TOKEN_IDENTIFIER, errorMessage);
+    //    return identifierConstant(&parser.previous);
+    return 1;
+}
+
 static void binary()
 {
     TokenType operatorType = parser.previous.type;
@@ -271,6 +284,30 @@ static void expression()
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
+/**
+ * @brief
+ *
+ */
+static void varDeclaration()
+{
+    // keyword followed by var name is compiled by parseVariable
+    uint8_t global = parseVariable("Expect variable name.");
+
+    // look for '=' followed by initializer expression
+    if (match(TOKEN_EQUAL))
+    {
+        expression();
+    }
+    else
+    {
+        // if no '=' then initialize the var to nil
+        emitByte(OP_NIL);
+    }
+    consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+
+    // defineVariable(global);
+}
+
 static void expressionStatement()
 {
     expression();
@@ -286,12 +323,60 @@ static void printStatement()
 }
 
 /**
- * @brief Compile a single declaration
+ * @brief If we hit a compile error we should begin synchronizing.
+ * We skip tokens indiscriminately until we reach something that
+ * looks like a statement boundary. We recognize the boundary by
+ * looking for a preceding token that can end a statement, like a
+ * semicolon. Or we’ll look for a subsequent token that begins a
+ * statement, usually one of the control flow or declaration
+ * keywords.
+ */
+static void synchronize()
+{
+    parser.panicMode = false;
+
+    while (parser.current.type != TOKEN_EOF)
+    {
+        if (parser.previous.type == TOKEN_SEMICOLON)
+            return;
+        switch (parser.current.type)
+        {
+        case TOKEN_CLASS:
+        case TOKEN_FUN:
+        case TOKEN_VAR:
+        case TOKEN_FOR:
+        case TOKEN_IF:
+        case TOKEN_WHILE:
+        case TOKEN_PRINT:
+        case TOKEN_RETURN:
+            return;
+
+        default:; // Do nothing.
+        }
+
+        advance();
+    }
+}
+
+/**
+ * @brief Compile a single declaration (class, function, or var declaration)
  *
  */
 static void declaration()
 {
-    statement();
+    if (match(TOKEN_VAR))
+    {
+        varDeclaration();
+    }
+    else
+    {
+        statement();
+    }
+    // if we hit compile error while parsing prev statement, start synchronizing
+    if (parser.panicMode)
+    {
+        synchronize();
+    }
 }
 
 static void statement()
