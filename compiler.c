@@ -229,7 +229,7 @@ static void parsePrecedence(Precedence precedence);
 static uint8_t identifierConstant(Token *name)
 {
     char *newString = copyString(name->start, name->length);
-    uint8_t strindIdxConstTable = makeConstant(OBJ_VAL(newString));
+    uint8_t stringIdxConstTable = makeConstant(OBJ_VAL(newString));
     return stringIdxConstTable;
 }
 
@@ -237,6 +237,11 @@ static uint8_t parseVariable(const char *errorMessage)
 {
     consume(TOKEN_IDENTIFIER, errorMessage);
     return identifierConstant(&parser.previous);
+}
+
+static void defineVariable(uint8_t global)
+{
+    emitBytes(OP_DEFINE_GLOBAL, global);
 }
 
 static void binary()
@@ -325,7 +330,7 @@ static void varDeclaration()
     }
     consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
 
-    // defineVariable(global);
+    defineVariable(global);
 }
 
 static void expressionStatement()
@@ -439,6 +444,28 @@ static void string()
 }
 
 /**
+ * @brief Grabs an identifier tokan and adds its lexeme to a chunks constant
+ * table as a string. It then emits an instruction that loads the global var
+ * with that name
+ *
+ * @param name
+ */
+static void namedVariable(Token name)
+{
+    uint8_t arg = identifierConstant(&name);
+    emitBytes(OP_GET_GLOBAL, arg);
+}
+
+/**
+ * @brief Parsing named variable
+ *
+ */
+static void variable()
+{
+    namedVariable(parser.previous);
+}
+
+/**
  * @brief PREFIX EXPRESSION
  *
  */
@@ -491,6 +518,7 @@ ParseRule rules[] = {
     [TOKEN_GREATER_EQUAL] = {binary, NULL, PREC_COMPARISON},
     [TOKEN_LESS] = {binary, NULL, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL] = {binary, NULL, PREC_COMPARISON},
+    [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_IDENTIFIER] = {NULL, NULL, PREC_NONE},
     [TOKEN_STRING] = {NULL, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
