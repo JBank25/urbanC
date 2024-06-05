@@ -47,7 +47,21 @@ typedef struct
     Precedence precedence;
 } ParseRule;
 
+typedef struct
+{
+    Token name; // name of the variable
+    int depth;  // scope depth of the block where the local was declared
+} Local;
+
+typedef struct
+{
+    Local locals[UINT8_COUNT];
+    int localCount; // counts number of locals are in scope
+    int scopeDepth; // number of blocks surrounding current bit of code we're compiling
+} Compiler;
+
 Parser parser;
+Compiler *current = NULL;
 Chunk *compilingChunk;
 
 static Chunk *currentChunk()
