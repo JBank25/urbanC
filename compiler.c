@@ -55,9 +55,9 @@ typedef struct
 
 typedef struct
 {
-    Local locals[UINT8_COUNT];
-    int localCount; // counts number of locals are in scope
-    int scopeDepth; // number of blocks surrounding current bit of code we're compiling
+    Local locals[UINT8_COUNT]; // flat array of all locals in scope during each point in compilation
+    int localCount;            // counts number of locals are in scope
+    int scopeDepth;            // number of blocks surrounding current bit of code we're compiling
 } Compiler;
 
 Parser parser;
@@ -222,6 +222,12 @@ static void emitConstant(Value value)
 {
     emitBytes(OP_CONSTANT, makeConstant(value));
 }
+static void initCompiler(Compiler *compiler)
+{
+    compiler->localCount = 0;
+    compiler->scopeDepth = 0;
+    current = compiler;
+}
 
 static void endCompiler()
 {
@@ -232,6 +238,26 @@ static void endCompiler()
         disassembleChunk(currentChunk(), "code");
     }
 #endif // DEBUG_PRINT_CODE
+}
+
+/**
+ * @brief Helper function to increment depth height once we have
+ * entered a block
+ *
+ */
+static void beginScope()
+{
+    current->scopeDepth += 1;
+}
+
+/**
+ * @brief Helper function to decrement depth height once we have
+ * left a block
+ *
+ */
+static void beginScope()
+{
+    current->scopeDepth -= 1;
 }
 
 static void expression();
@@ -250,11 +276,19 @@ static uint8_t identifierConstant(Token *name)
 static uint8_t parseVariable(const char *errorMessage)
 {
     consume(TOKEN_IDENTIFIER, errorMessage);
+    // exit if we are in local scope. no need to stuff variable's name
+    // in constant table
+    if (current->scopeDepth > 0)
+        return 0;
     return identifierConstant(&parser.previous);
 }
 
 static void defineVariable(uint8_t global)
 {
+    if (current->scopeDepth > 0)
+    {
+        return;
+    }
     emitBytes(OP_DEFINE_GLOBAL, global);
 }
 
@@ -322,7 +356,15 @@ static void expression()
 {
     parsePrecedence(PREC_ASSIGNMENT);
 }
-
+static void block()
+{
+    // compile until end of block or file
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
+    {
+        declaration();
+    }
+    consume(TOKEN_RIGHT_BRACE, "Expect '}' after block");
+}
 /**
  * @brief
  *
@@ -423,6 +465,13 @@ static void statement()
     if (match(TOKEN_PRINT))
     {
         printStatement();
+    }
+    else if (match(TOKEN_LEFT_BRACE))
+    {
+        // if this executes we have found a block statement
+        beginScope();
+        block();
+        endScope();
     }
     else
     {
@@ -610,6 +659,8 @@ static ParseRule *getRule(TokenType type)
 bool compile(const char *source, Chunk *chunk)
 {
     initScanner(source); // initialize the state of scanner
+    Compiler compiler;
+    initCompiler(&compiler);
     compilingChunk = chunk;
 
     parser.hadError = false;
