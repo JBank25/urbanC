@@ -6,6 +6,7 @@
 #include "value.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
@@ -255,9 +256,18 @@ static void beginScope()
  * left a block
  *
  */
-static void beginScope()
+static void endScope()
 {
     current->scopeDepth -= 1;
+
+    // when a block ends we must be rid of the local variables created within it
+    while (current->localCount > 0 &&
+           current->locals[current->localCount - 1].depth >
+               current->scopeDepth)
+    {
+        emitByte(OP_POP);
+        current->localCount--;
+    }
 }
 
 static void expression();
@@ -273,6 +283,76 @@ static uint8_t identifierConstant(Token *name)
     return stringIdxConstTable;
 }
 
+/**
+ * @brief
+ *
+ * @param a
+ * @param b
+ * @return true if identifiers are equal
+ * @return false else
+ */
+static bool identifiersEqual(Token *a, Token *b)
+{
+    // quick fail check if lengths are different
+    if (a->length != b->length)
+        return false;
+
+    return memcmp(a->start, b->start, a->length) == 0;
+}
+
+static void addLocal(Token name)
+{
+
+    // VM only supports up to 256 local variables in scope at a time
+    if (current->localCount == UINT8_COUNT)
+    {
+        error("Too many local variables in function.");
+        return;
+    }
+
+    Local *local = &current->locals[current->localCount++];
+    local->name = name;
+    local->depth = current->scopeDepth;
+}
+
+static declareVariable()
+{
+    // ONLY do this for locals, return if we're in global scope
+    if (current->scopeDepth == 0)
+    {
+        return;
+    }
+
+    Token *name = &parser.previous;
+
+    // local vars appended to array when added. Start at end and work
+    // backward looking for existing var with same name
+    for (int i = current->localCount - 1; i >= 0; i--)
+    {
+        Local *local = &current->locals[i];
+
+        if (local->depth != -1 && local->depth < current->scopeDepth)
+        {
+            break;
+        }
+
+        if (identifiersEqual(name, &local->name))
+        {
+            error("Already a variable with this name in this scope.");
+        }
+    }
+
+    addLocal(*name);
+}
+
+/**
+ * @brief Consume identifier token for variable name, add its lexeme to the
+ * chunk's constant table as a string, return the constant table index where
+ * it was added
+ *
+ * @param errorMessage
+ * @return uint8_t
+ */
 static uint8_t parseVariable(const char *errorMessage)
 {
     consume(TOKEN_IDENTIFIER, errorMessage);
@@ -356,6 +436,7 @@ static void expression()
 {
     parsePrecedence(PREC_ASSIGNMENT);
 }
+
 static void block()
 {
     // compile until end of block or file
@@ -365,6 +446,7 @@ static void block()
     }
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after block");
 }
+
 /**
  * @brief
  *
