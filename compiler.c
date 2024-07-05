@@ -223,10 +223,15 @@ static void emitConstant(Value value)
 {
     emitBytes(OP_CONSTANT, makeConstant(value));
 }
+
 static void initCompiler(Compiler *compiler)
 {
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
+    for (int i = 0; i < UINT8_COUNT; i++)
+    {
+        memset(&compiler->locals[i], 0, sizeof(Token) + sizeof(int));
+    }
     current = compiler;
 }
 
@@ -300,6 +305,25 @@ static bool identifiersEqual(Token *a, Token *b)
     return memcmp(a->start, b->start, a->length) == 0;
 }
 
+static int resolveLocal(Compiler *compiler, Token *name)
+{
+    // walk the list of locals in current scope
+    for (int i = compiler->localCount - 1; i >= 0; i--)
+    {
+        Local *local = &compiler->locals[i];
+        // if we find same name as identifier token, they must be the same
+        if (identifiersEqual(name, &local->name))
+        {
+            if (local->depth == -1)
+            {
+                error("Can't read local variable in its own initializer.");
+            }
+        }
+    }
+
+    return -1;
+}
+
 static void addLocal(Token name)
 {
 
@@ -312,10 +336,10 @@ static void addLocal(Token name)
 
     Local *local = &current->locals[current->localCount++];
     local->name = name;
-    local->depth = current->scopeDepth;
+    local->depth = -1; // locals put in uninitialized state at first
 }
 
-static declareVariable()
+static void declareVariable()
 {
     // ONLY do this for locals, return if we're in global scope
     if (current->scopeDepth == 0)
@@ -356,6 +380,7 @@ static declareVariable()
 static uint8_t parseVariable(const char *errorMessage)
 {
     consume(TOKEN_IDENTIFIER, errorMessage);
+    declareVariable();
     // exit if we are in local scope. no need to stuff variable's name
     // in constant table
     if (current->scopeDepth > 0)
@@ -363,10 +388,18 @@ static uint8_t parseVariable(const char *errorMessage)
     return identifierConstant(&parser.previous);
 }
 
+static void markInitialized()
+{
+    current->locals[current->localCount - 1].depth =
+        current->scopeDepth;
+}
+
 static void defineVariable(uint8_t global)
 {
     if (current->scopeDepth > 0)
     {
+        // mark local initialized once is has been
+        markInitialized();
         return;
     }
     emitBytes(OP_DEFINE_GLOBAL, global);
@@ -542,6 +575,10 @@ static void declaration()
     }
 }
 
+/**
+ * @brief Handle statements once the declaration function has found one
+ *
+ */
 static void statement()
 {
     if (match(TOKEN_PRINT))
@@ -597,15 +634,28 @@ static void string(bool canAssign)
  */
 static void namedVariable(Token name, bool canAssign)
 {
-    uint8_t arg = identifierConstant(&name);
-    if (canAssign && match(TOKEN_EQUAL))
+    uint8_t getOp, setOp;
+    // see if the local exists
+    int arg = resolveLocal(current, &name);
+    if (arg != -1)
     {
-        expression();
-        emitBytes(OP_SET_GLOBAL, arg);
+        getOp = OP_GET_LOCAL;
+        setOp = OP_SET_LOCAL;
     }
     else
     {
-        emitBytes(OP_GET_GLOBAL, arg);
+        arg = identifierConstant(&name);
+        getOp = OP_GET_GLOBAL;
+        setOp = OP_SET_GLOBAL;
+    }
+    if (canAssign && match(TOKEN_EQUAL))
+    {
+        expression();
+        emitBytes(setOp, (uint8_t)arg);
+    }
+    else
+    {
+        emitBytes(getOp, (uint8_t)arg);
     }
 }
 
@@ -672,7 +722,6 @@ ParseRule rules[] = {
     [TOKEN_LESS] = {binary, NULL, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL] = {binary, NULL, PREC_COMPARISON},
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
-    [TOKEN_IDENTIFIER] = {NULL, NULL, PREC_NONE},
     [TOKEN_STRING] = {NULL, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
     [TOKEN_AND] = {NULL, NULL, PREC_NONE},
@@ -750,6 +799,7 @@ bool compile(const char *source, Chunk *chunk)
 
     advance();
 
+    // compile til we hit EOF
     while (!match(TOKEN_EOF))
     {
         declaration();
