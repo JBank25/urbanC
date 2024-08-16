@@ -572,11 +572,25 @@ static void ifStatement()
     // placeholde offset for jump instruction. thenJump is the location
     // of the JUMP instruction
     int thenJump = emitJump(OP_JUMP_IF_FALSE);
+    emitByte(OP_POP);
     // compile the body of the if statement
     statement();
 
     // backpatch the jump instruction with correct offset
     patchJump(thenJump);
+
+    emitByte(OP_POP);
+
+    // support for else. Need to account for case where if is TRUE and its body is executed and be
+    // careful not to fall thru and execute the body of the else code as well
+    if (match(TOKEN_ELSE))
+        statement();
+
+    // same as the thenJump above
+    int elseJump = emitJump(OP_JUMP);
+
+    // backpatch for the else as well
+    patchJump(elseJump);
 }
 
 static void printStatement()
