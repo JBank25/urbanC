@@ -242,6 +242,8 @@ static InterpretResult run()
         }
         case OP_JUMP_IF_FALSE:
         {
+            // offset tells us how much to increment ip in the event that the if statement is false.
+            // offset will jump over the body of the conditional
             uint16_t offset = READ_SHORT();
             if (isFalsey(peek(0)))
                 vm.ip += offset;
