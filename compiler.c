@@ -214,7 +214,8 @@ static uint8_t makeConstant(Value value)
 }
 
 /**
- * @brief This function is used to patch the offset of a jump instruction
+ * @brief This function is used to patch the offset of a jump instruction. Called by
+ * emitJump and before patchJump.
  *
  * @param instruction - placeholder instruction to be patched
  * @return int - offset of the jump instruction
@@ -242,6 +243,12 @@ static void emitConstant(Value value)
     emitBytes(OP_CONSTANT, makeConstant(value));
 }
 
+/**
+ * @brief This function is used to patch the offset of a jump instruction. Called by
+ * emitJump AFTER emitJump
+ *
+ * @param offset
+ */
 static void patchJump(int offset)
 {
     // -2 to adjust for the bytecode for the jump offset itself.
@@ -562,7 +569,8 @@ static void ifStatement()
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
-    // placeholde offset for jump instruction
+    // placeholde offset for jump instruction. thenJump is the location
+    // of the JUMP instruction
     int thenJump = emitJump(OP_JUMP_IF_FALSE);
     // compile the body of the if statement
     statement();
