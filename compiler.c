@@ -213,6 +213,24 @@ static uint8_t makeConstant(Value value)
     return (uint8_t)constant;
 }
 
+/**
+ * @brief This function is used to patch the offset of a jump instruction
+ *
+ * @param instruction - placeholder instruction to be patched
+ * @return int - offset of the jump instruction
+ */
+static int emitJump(uint8_t instruction)
+{
+    // emit opcode byte bc multiple instructions use this function 'if' and
+    emitByte(instruction);
+    // 16 bit offset lets us jump up to 65,535 bytes forward or backward
+    // SHOULD be plents
+    emitByte(0xff);
+    emitByte(0xff);
+
+    return currentChunk()->count - 2;
+}
+
 static void emitBytes(uint8_t byte1, uint8_t byte2)
 {
     emitByte(byte1);
@@ -222,6 +240,20 @@ static void emitBytes(uint8_t byte1, uint8_t byte2)
 static void emitConstant(Value value)
 {
     emitBytes(OP_CONSTANT, makeConstant(value));
+}
+
+static void patchJump(int offset)
+{
+    // -2 to adjust for the bytecode for the jump offset itself.
+    int jump = currentChunk()->count - offset - 2;
+
+    if (jump > UINT16_MAX)
+    {
+        error("ASKING TOO MUCH OF BRANCH. Too much code to jump over.");
+    }
+
+    currentChunk()->code[offset] = (jump >> 8) & 0xff;
+    currentChunk()->code[offset + 1] = jump & 0xff;
 }
 
 static void initCompiler(Compiler *compiler)
@@ -511,6 +543,34 @@ static void expressionStatement()
     emitByte(OP_POP);
 }
 
+/**
+ * @brief Ever notice in an if statement in a language like C, the '(' does not
+ * do anything? It's just there to make the code more readable, it more easily
+ * shows where the condition starts and ends as well as where the body starts.
+ *
+ * How do we know how far to jump forward to skip the body of the if statement
+ * if the condition is false? We use a method called backpatching. We emit the
+ * jump instruction first with a placeholder offset. Then we compile the body.
+ * Once the body is compiled, we know how far to jump. We go back and fill in
+ * the placeholder with the correct offset.
+ *
+ */
+static void ifStatement()
+{
+    // compile the condition expression between the parentheses
+    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
+    expression();
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
+
+    // placeholde offset for jump instruction
+    int thenJump = emitJump(OP_JUMP_IF_FALSE);
+    // compile the body of the if statement
+    statement();
+
+    // backpatch the jump instruction with correct offset
+    patchJump(thenJump);
+}
+
 static void printStatement()
 {
     expression();
@@ -584,6 +644,10 @@ static void statement()
     if (match(TOKEN_PRINT))
     {
         printStatement();
+    }
+    else if (match(TOKEN_IF))
+    {
+        ifstatement();
     }
     else if (match(TOKEN_LEFT_BRACE))
     {
