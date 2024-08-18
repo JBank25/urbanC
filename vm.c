@@ -271,13 +271,14 @@ static InterpretResult run()
 
 InterpretResult interpret(const char *source)
 {
-    Chunk chunk; // create new empty chunk
+    // create new empty chunk
+    Chunk chunk;
     initChunk(&chunk);
 
-    // fill chunk w bytecode assuming no errors
+    // take user program and fill chunk w bytecode
     if (!compile(source, &chunk))
     {
-        // if errors free chunk and ERROR
+        // if errors in the program, free chunk and ERROR
         freeChunk(&chunk);
         return INTERPRET_COMPILE_ERROR;
     }

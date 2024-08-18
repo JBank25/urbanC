@@ -5,12 +5,16 @@
 #include "scanner.h"
 #include "value.h"
 
+#include <execinfo.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
 #endif // DEBUG_PRINT_CODE
+
+#define MAX_STACK_FRAMES 64
 
 typedef struct
 {
@@ -65,6 +69,20 @@ Parser parser;
 Compiler *current = NULL;
 Chunk *compilingChunk;
 
+static void printStackTrace()
+{
+    void *stack_traces[MAX_STACK_FRAMES];
+    int trace_size = backtrace(stack_traces, MAX_STACK_FRAMES);
+    char **messages = backtrace_symbols(stack_traces, trace_size);
+
+    for (int i = 2; i < trace_size; ++i)
+    {
+        printf("%s\n", messages[i]);
+    }
+
+    free(messages);
+}
+
 static Chunk *currentChunk()
 {
     return compilingChunk;
@@ -101,6 +119,7 @@ static void errorAt(Token *token, const char *message)
 
 static void error(const char *message)
 {
+    printStackTrace();
     // often the case we'll report an error at location of token
     // we just consumed. This function (error) rather than errorAtCurrent will
     // be used for that
@@ -444,8 +463,14 @@ static void defineVariable(uint8_t global)
     emitBytes(OP_DEFINE_GLOBAL, global);
 }
 
+/**
+ * @brief Called after the left hand side of the AND operator has been compiled.
+ *
+ * @param canAssign
+ */
 static void and_(bool canAssign)
 {
+    // if left operand is false, jump to the end of the AND expression
     int endJump = emitJump(OP_JUMP_IF_FALSE);
 
     emitByte(OP_POP);
@@ -679,7 +704,7 @@ static void statement()
     }
     else if (match(TOKEN_IF))
     {
-        ifstatement();
+        ifStatement();
     }
     else if (match(TOKEN_LEFT_BRACE))
     {
@@ -821,7 +846,6 @@ ParseRule rules[] = {
     [TOKEN_STRING] = {NULL, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
     [TOKEN_AND] = {NULL, and_, PREC_AND},
-    [TOKEN_AND] = {NULL, NULL, PREC_NONE},
     [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
     [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
     [TOKEN_FALSE] = {literal, NULL, PREC_NONE},
