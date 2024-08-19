@@ -20,8 +20,8 @@ $(BUILD_DIR)/%.o: %.c $(HEADERS)
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(OBJECTS) -Wall $(LIBS) -o $(BUILD_DIR)/$@
+	$(CC) $(OBJECTS) -Wall $(LIBS) -o $@
 
 clean:
 	-rm -rf $(BUILD_DIR)
+	-rm -f $(TARGET)
