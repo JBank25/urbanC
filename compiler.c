@@ -605,6 +605,61 @@ static void expressionStatement()
     emitByte(OP_POP);
 }
 
+static void forStatement()
+{
+    // any variables declared should be scoped to the for loop
+    beginScope();
+
+    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
+    /****START INITIALIZAER CLAUSE****/
+    if (match(TOKEN_SEMICOLON))
+    {
+        // No initializer.
+        // for(;...;...;) is valid
+    }
+    else if (match(TOKEN_VAR))
+    {
+        // for(var i = 0;...;...) is valid
+        varDeclaration();
+    }
+    else
+    {
+        expressionStatement();
+    }
+    /**** END INITIALIZAER CLAUSE****/
+
+    int loopStart = currentChunk()->count;
+
+    /****START CONDITION CLAUSE****/
+    int exitJump = -1;
+    // clause is optional, if it omitted, the next token MUST be a semicolon
+    if (!match(TOKEN_SEMICOLON))
+    {
+        // if clause is present, compile the expression
+        expression();
+        consume(TOKEN_SEMICOLON, "Expect ';' after loop condition.");
+
+        // Jump out of the loop if the condition is false.
+        exitJump = emitJump(OP_JUMP_IF_FALSE);
+        emitByte(OP_POP); // Condition.
+    }
+    /**** END CONDITION CLAUSE*****/
+
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
+
+    statement();
+    emitLoop(loopStart);
+
+    if (exitJump != -1)
+    {
+        patchJump(exitJump);
+        emitByte(OP_POP); // Condition.
+    }
+
+    // end scope for variables declared in for loop
+    endScope();
+}
+
 /**
  * @brief Ever notice in an if statement in a language like C, the '(' does not
  * do anything? It's just there to make the code more readable, it more easily
@@ -749,6 +804,10 @@ static void statement()
     else if (match(TOKEN_IF))
     {
         ifStatement();
+    }
+    else if (match(TOKEN_FOR))
+    {
+        forStatement();
     }
     else if (match(TOKEN_WHILE))
     {
