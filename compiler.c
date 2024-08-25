@@ -257,6 +257,19 @@ static void emitBytes(uint8_t byte1, uint8_t byte2)
     emitByte(byte2);
 }
 
+static void emitLoop(int loopStart)
+{
+    // emit new loop instruction.
+    emitByte(OP_LOOP);
+
+    int offset = currentChunk()->count - loopStart + 2;
+    if (offset > UINT16_MAX)
+        error("Loop body too large.");
+
+    emitByte((offset >> 8) & 0xff);
+    emitByte(offset & 0xff);
+}
+
 static void emitConstant(Value value)
 {
     emitBytes(OP_CONSTANT, makeConstant(value));
@@ -635,6 +648,30 @@ static void printStatement()
     emitByte(OP_PRINT);
 }
 
+static void whileStatement()
+{
+    // jump all the way back to reeavluate the condition on each iteration.
+    // start of the loop
+    int loopStart = currentChunk()->count;
+    // compile conditional expression within the parentheses
+    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
+    expression();
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
+
+    // placeholder for jump instruction
+    int exitJump = emitJump(OP_JUMP_IF_FALSE);
+    emitByte(OP_POP);
+    statement();
+
+    // Needs to know how far back to jump so we can loop back to the start of the while loop.
+    // jump all the way back to reeavluate the condition on each iteration.
+    emitLoop(loopStart);
+
+    // patch jump after compiling the body of while loop
+    patchJump(exitJump);
+    emitByte(OP_POP);
+}
+
 /**
  * @brief If we hit a compile error we should begin synchronizing.
  * We skip tokens indiscriminately until we reach something that
@@ -705,6 +742,10 @@ static void statement()
     else if (match(TOKEN_IF))
     {
         ifStatement();
+    }
+    else if (match(TOKEN_WHILE))
+    {
+        whileStatement();
     }
     else if (match(TOKEN_LEFT_BRACE))
     {
