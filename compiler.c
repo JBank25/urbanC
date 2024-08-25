@@ -153,15 +153,16 @@ static void advance()
 }
 
 /**
- * @brief
+ * @brief Consume token of expected type or throw error
  *
- * @param type
- * @param message
+ * @param type - type of token we are expecting
+ * @param message - error message to display if token is not of expected type
  */
 static void consume(TokenType type, const char *message)
 {
     if (parser.current.type == type)
     {
+        // advance to the next token
         advance();
         return;
     }
@@ -514,16 +515,22 @@ static void binary(bool canAssign)
         break;
     case TOKEN_BANG_EQUAL:
         emitBytes(OP_EQUAL, OP_NOT);
+        break;
     case TOKEN_EQUAL_EQUAL: // single instruction for ==
         emitByte(OP_EQUAL);
+        break;
     case TOKEN_GREATER: // single instr for >
         emitByte(OP_GREATER);
+        break;
     case TOKEN_GREATER_EQUAL:
         emitBytes(OP_LESS, OP_NOT);
+        break;
     case TOKEN_LESS: // single instr for <
         emitByte(OP_LESS);
+        break;
     case TOKEN_LESS_EQUAL:
         emitBytes(OP_GREATER, OP_NOT);
+        break;
     default:
         return; // Unreachable.
     }
