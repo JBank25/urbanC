@@ -1,5 +1,6 @@
 #pragma once
 
+#include "chunk.h"
 #include "common.h"
 #include "value.h"
 
@@ -22,6 +23,15 @@ struct Obj
     ObjType type;
     struct Obj *next; // an INTRUSIVE list, every obj gets a ptr to next
 };
+
+// We'll give each function its own Chunk and some other metadata
+typedef struct
+{
+    Obj obj;
+    int arity; // stores num of params the function expects
+    Chunk chunk;
+    ObjString *name;
+} ObjFunction;
 
 struct ObjString
 {
