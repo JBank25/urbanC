@@ -31,6 +31,7 @@ typedef struct
     int arity; // stores num of params the function expects
     Chunk chunk;
     ObjString *name;
+    sdfasdfasdfkashdhj asdfasdf
 } ObjFunction;
 
 struct ObjString
