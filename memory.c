@@ -37,10 +37,22 @@ void *reallocate(void *pointer, size_t oldSize, size_t newSize)
     return result;
 }
 
+/**
+ * @brief Return the bits you borrowed back to the OS. A destructor-like function.
+ *
+ * @param object - object whose mem we are freeing
+ */
 static void freeObject(Obj *object)
 {
     switch (object->type)
     {
+    case OBJ_FUNCTION:
+    {
+        ObjFunction *function = (ObjFunction *)object;
+        freeChunk(&function->chunk);
+        FREE(ObjFunction, object);
+        break;
+    }
     case OBJ_STRING:
     {
         ObjString *string = (ObjString *)object;
