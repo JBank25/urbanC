@@ -58,20 +58,8 @@ typedef struct
     int depth;  // scope depth of the block where the local was declared
 } Local;
 
-/**
- * Lets compiled know when its compiling top-level code vs the body of a function
- */
-typedef enum
-{
-    TYPE_FUNCTION,
-    TYPE_SCRIPT
-} FunctionType;
-
 typedef struct
 {
-    ObjFunction *function;
-    FunctionType type;
-
     Local locals[UINT8_COUNT]; // flat array of all locals in scope during each point in compilation
     int localCount;            // counts number of locals are in scope
     int scopeDepth;            // number of blocks surrounding current bit of code we're compiling
@@ -95,15 +83,9 @@ static void printStackTrace()
     free(messages);
 }
 
-/**
- * @brief Current chunk is always the chunk owned by the function we
- * are currently compiling. This function returns a pointer to that chunk
- *
- * @return Chunk* - pointer to the current chunk
- */
 static Chunk *currentChunk()
 {
-    return &current->function->chunk;
+    return compilingChunk;
 }
 
 static void errorAt(Token *token, const char *message)
