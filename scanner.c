@@ -227,7 +227,6 @@ static TokenType checkKeyword(int start, int length, const char *rest, TokenType
  */
 static TokenType identifierType()
 {
-    // test
     switch (scanner.start[0])
     {
     case 'a':
