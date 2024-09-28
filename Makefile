@@ -1,7 +1,11 @@
 TARGET = prog
 LIBS = -lm
 CC = gcc
-CFLAGS = -g -Wall
+# -O0: no optimization
+# -p: generate profiling information
+# -g: include debugging information
+# -Wall: enable all warnings
+CFLAGS = -O0 -g -Wall
 BUILD_DIR = build
 
 .PHONY: default all clean
@@ -25,3 +29,9 @@ $(TARGET): $(OBJECTS)
 clean:
 	-rm -rf $(BUILD_DIR)
 	-rm -f $(TARGET)
+
+# verify core dump limit using 
+# ulimit -c
+# this will probably return a 0 (bytes) initially
+# to set the limit to unlimited use
+# ulimit -c unlimited

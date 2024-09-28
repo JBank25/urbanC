@@ -7,7 +7,7 @@
 #define ARR_GROWTH_FACTOR 2
 
 #define ALLOCATE(type, count) \
-    (type *)reallocate(NULL, 0, sizeof(type) * (count))
+    (type *)Memory_Reallocate(NULL, 0, sizeof(type) * (count))
 
 /**
  * Macro to calculate the new capacity for dynamic memory growth.
@@ -20,7 +20,7 @@
 #define GROW_CAPACITY(capacity) \
     ((capacity) < MIN_ARR_THRESHOLD ? MIN_ARR_THRESHOLD : (capacity) * ARR_GROWTH_FACTOR)
 
-#define FREE(type, pointer) reallocate(pointer, sizeof(type), 0)
+#define FREE(type, pointer) Memory_Reallocate(pointer, sizeof(type), 0)
 
 /**
  * @brief Macro for freeing an array of a specified type.
@@ -35,7 +35,7 @@
  * @param oldCount The old count of elements in the array.
  */
 #define FREE_ARRAY(type, pointer, oldCount) \
-    reallocate(pointer, sizeof(type) * (oldCount), 0)
+    Memory_Reallocate(pointer, sizeof(type) * (oldCount), 0)
 
 /**
  * @brief Macro for growing an array dynamically.
@@ -51,9 +51,17 @@
  * @param newCount The desired new count of elements.
  * @return A pointer to the reallocated memory for the array.
  */
-#define GROW_ARRAY(type, pointer, oldCount, newCount)      \
-    (type *)reallocate(pointer, sizeof(type) * (oldCount), \
-                       sizeof(type) * (newCount))
+#define GROW_ARRAY(type, pointer, oldCount, newCount)             \
+    (type *)Memory_Reallocate(pointer, sizeof(type) * (oldCount), \
+                              sizeof(type) * (newCount))
 
-void *reallocate(void *pointer, size_t oldSize, size_t newSize);
+/**
+ * @brief Function used for all dynamic memory allocation. This include allocating,
+ * reallocating, and freeing memory.
+ *
+ * @param pointer - The pointer to the memory to be Memory_Reallocated.
+ * @param oldSize - The size of the memory block pointed to by pointer.
+ * @param newSize - The new size of the memory block.
+ */
+void *Memory_Reallocate(void *pointer, size_t oldSize, size_t newSize);
 void freeObjects();
