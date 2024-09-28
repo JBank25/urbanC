@@ -4,15 +4,7 @@
 
 #include <stdlib.h>
 
-/**
- * Initializes a Chunk structure (holds bytecode).
- *
- * This function sets the count and capacity of the Chunk to 0, and assigns
- * NULL to the code pointer.
- *
- * @param chunk A pointer to the Chunk structure to be initialized.
- */
-void initChunk(Chunk *chunk)
+void Chunk_InitChunk(Chunk *chunk)
 {
     // TODO: error check if ptr is NULL
     chunk->count = 0;
@@ -23,14 +15,7 @@ void initChunk(Chunk *chunk)
     initValueArray(&chunk->constants);
 }
 
-/**
- * Writes a byte to the chunk's code array and updates the corresponding line number.
- *
- * @param chunk The chunk to write to.
- * @param byte The byte to write.
- * @param line The line number associated with the byte.
- */
-void writeChunk(Chunk *chunk, uint8_t byte, int line)
+void Chunk_WriteChunk(Chunk *chunk, uint8_t byte, int line)
 {
     // TODO: error check if ptr is NULL
 
@@ -47,30 +32,15 @@ void writeChunk(Chunk *chunk, uint8_t byte, int line)
     chunk->count++;
 }
 
-/**
- * Frees the memory allocated for a Chunk object.
- *
- * This function frees the memory allocated for the code, lines, and constants arrays
- * within the Chunk object. It also initializes the Chunk object to its initial state.
- *
- * @param chunk A pointer to the Chunk object to be freed.
- */
-void freeChunk(Chunk *chunk)
+void Chunk_FreeChunk(Chunk *chunk)
 {
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
     FREE_ARRAY(int, chunk->lines, chunk->capacity);
     freeValueArray(&chunk->constants);
-    initChunk(chunk);
+    Chunk_InitChunk(chunk);
 }
 
-/**
- * Adds a constant value to the chunk's constant array.
- *
- * @param chunk The chunk to add the constant to.
- * @param value The value to add as a constant.
- * @return The index where the last constant was appended.
- */
-int addConstant(Chunk *chunk, Value value)
+int Chunk_AddConstant(Chunk *chunk, Value value)
 {
     writeValueArray(&chunk->constants, value);
     // return index where last constant was appended so we can locate it later

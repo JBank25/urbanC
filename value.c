@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "memory.h"
 #include "object.h"
 #include "value.h"
@@ -53,15 +54,18 @@ void freeValueArray(ValueArray *array)
     initValueArray(array);
 }
 
-void printValue(Value value)
+void printValue(Value value, uint16_t colorCode)
 {
+    char buffer[100];
     switch (value.type)
     {
     case VAL_BOOL:
+        snprintf(buffer, sizeof(buffer), AS_BOOL(value) ? "true" : "false");
         printf(AS_BOOL(value) ? "true" : "false");
         break;
     case VAL_NIL:
-        printf("nil");
+        snprintf(buffer, sizeof(buffer), "nil");
+        Print_Color(buffer, colorCode);
         break;
     case VAL_NUMBER:
         printf("%g", AS_NUMBER(value));

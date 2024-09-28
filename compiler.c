@@ -206,7 +206,7 @@ static bool match(TokenType type)
 static void emitByte(uint8_t byte)
 {
     // write opcode or operand to prev line so runtime errors are associated w it
-    writeChunk(currentChunk(), byte, parser.previous.line);
+    Chunk_WriteChunk(currentChunk(), byte, parser.previous.line);
 }
 
 static void emitReturn()
@@ -223,7 +223,7 @@ static void emitReturn()
 static uint8_t makeConstant(Value value)
 {
     // add value to constant array
-    int constant = addConstant(currentChunk(), value);
+    int constant = Chunk_AddConstant(currentChunk(), value);
     if (constant > UINT8_MAX)
     {
         error("Too many constants in one chunk.");

@@ -67,4 +67,4 @@ bool valueEquals(Value a, Value b);
 void initValueArray(ValueArray *array);
 void writeValueArray(ValueArray *array, Value value);
 void freeValueArray(ValueArray *array);
-void printValue(Value value);
+void printValue(Value value, uint16_t colorCode);

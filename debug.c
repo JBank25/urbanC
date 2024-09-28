@@ -34,9 +34,15 @@ static int constantInstruction(const char *name, Chunk *chunk, int offset)
     uint8_t constant = chunk->code[offset + 1];
     printf("Instruction name: %-16s At Offset: %4d ", name, constant);
     printf("Value: '");
-    printValue(chunk->constants.values[constant]);
+    // TODO: fix number color here
+    printValue(chunk->constants.values[constant], 32);
     printf("'\n");
     return offset + 2;
+}
+
+void Print_Color(const char *text, int color_code)
+{
+    printf("\033[%dm%s\033[0m", color_code, text);
 }
 
 /**

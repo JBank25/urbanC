@@ -101,12 +101,16 @@ static InterpretResult run()
     for (;;)
     {
 #ifdef DEBUG_TRACE_EXECUTION
-        printf("Num Values on stack: %lu\n", (vm.stackTop - vm.stack));
+        char buffer[100];
+        snprintf(buffer, sizeof(buffer), "Num Values on stack: %lu\n", (vm.stackTop - vm.stack));
+        Print_Color(buffer, STACK_ANSI_COLOR_CYAN); // 32 is the color code for green
+        // printf("Num Values on stack: %lu\n", (vm.stackTop - vm.stack));
         for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
         {
-            printf("[ ");
-            printValue(*slot);
-            printf(" ]");
+
+            Print_Color("[ ", STACK_ANSI_COLOR_CYAN);
+            printValue(*slot, STACK_ANSI_COLOR_CYAN);
+            Print_Color(" ]", STACK_ANSI_COLOR_CYAN);
         }
         printf("\n");
         // Grab relative offset of ip from beginning of bytecide
@@ -236,7 +240,8 @@ static InterpretResult run()
             break;
         case OP_PRINT:
         {
-            printValue(pop());
+            // TODO: fix color printing here
+            printValue(pop(), 31);
             printf("\n");
             break;
         }
@@ -279,13 +284,13 @@ InterpretResult interpret(const char *source)
 {
     // create new empty chunk
     Chunk chunk;
-    initChunk(&chunk);
+    Chunk_InitChunk(&chunk);
 
     // take user program and fill chunk w bytecode
     if (!compile(source, &chunk))
     {
         // if errors in the program, free chunk and ERROR
-        freeChunk(&chunk);
+        Chunk_FreeChunk(&chunk);
         return INTERPRET_COMPILE_ERROR;
     }
 
@@ -295,7 +300,7 @@ InterpretResult interpret(const char *source)
 
     InterpretResult result = run();
 
-    freeChunk(&chunk);
+    Chunk_FreeChunk(&chunk);
     return result;
 }
 
