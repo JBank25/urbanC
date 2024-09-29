@@ -29,14 +29,24 @@ static int jumpInstruction(const char *name, int sign, Chunk *chunk, int offset)
     return offset + 3;
 }
 
-static int constantInstruction(const char *name, Chunk *chunk, int offset)
+/**
+ * @brief Disassembles a constant instruction.
+ *
+ * @param name - name of the instruction
+ * @param chunk - chunk containing the instruction
+ * @param offset - offset of the instruction in the chunk
+ * @return int - offset of the next instruction
+ */
+static int Debug_ConstantInstruction(const char *name, Chunk *chunk, int offset)
 {
+    //
     uint8_t constant = chunk->code[offset + 1];
-    printf("Instruction name: %-16s At Offset: %4d ", name, constant);
+    printf("Instruction name: %-16s At Chunk Offset: %4d ", name, constant);
     printf("Value: '");
     // TODO: fix number color here
     printValue(chunk->constants.values[constant], 32);
     printf("'\n");
+    // OP_CONSTANT is a two-byte instruction, need to increment by 2 to get to next instruction
     return offset + 2;
 }
 
@@ -71,7 +81,7 @@ void disassembleChunk(Chunk *chunk, const char *name)
  * Disassembles an instruction in the given chunk at the specified offset.
  *
  * @param chunk The chunk containing the instruction.
- * @param offset The offset of the instruction in the chunk.
+ * @param offset The offset of the instruction within the chunk.
  *
  * @return offset of the next instruction
  */
@@ -95,7 +105,7 @@ int disassembleInstruction(Chunk *chunk, int offset)
     switch (instruction)
     {
     case OP_CONSTANT:
-        return constantInstruction("OP_CONSTANT", chunk, offset);
+        return Debug_ConstantInstruction("OP_CONSTANT", chunk, offset);
     case OP_NIL:
         return simpleInstruction("OP_NIL", offset);
     case OP_TRUE:
@@ -105,7 +115,7 @@ int disassembleInstruction(Chunk *chunk, int offset)
     case OP_EQUAL:
         return simpleInstruction("OP_EQUAL", offset);
     case OP_SET_GLOBAL:
-        return constantInstruction("OP_SET_GLOBAL", chunk, offset);
+        return Debug_ConstantInstruction("OP_SET_GLOBAL", chunk, offset);
     case OP_POP:
         return simpleInstruction("OP_POP", offset);
     case OP_GREATER:
@@ -127,13 +137,13 @@ int disassembleInstruction(Chunk *chunk, int offset)
     case OP_PRINT:
         return simpleInstruction("OP_PRINT", offset);
     case OP_DEFINE_GLOBAL:
-        return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
+        return Debug_ConstantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
     case OP_GET_LOCAL:
         return byteInstruction("OP_GET_LOCAL", chunk, offset);
     case OP_SET_LOCAL:
         return byteInstruction("OP_SET_LOCAL", chunk, offset);
     case OP_GET_GLOBAL:
-        return constantInstruction("OP_GET_GLOBAL", chunk, offset);
+        return Debug_ConstantInstruction("OP_GET_GLOBAL", chunk, offset);
     case OP_JUMP:
         return jumpInstruction("OP_JUMP", 1, chunk, offset);
     case OP_JUMP_IF_FALSE:

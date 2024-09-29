@@ -45,9 +45,9 @@ typedef struct
 {
     uint32_t count;       // num of elements we currently have allocated
     uint32_t capacity;    // num of allocated entries that are actually being used
-    ValueArray constants; // store chunk's constants
+    ValueArray constants; // store chunk's constants, every chunk will have constant pool
     uint8_t *code;
-    int *lines;
+    int *lines; // each entry in this array is the line number of the corresponding instruction
 } Chunk;
 
 /**

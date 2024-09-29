@@ -7,14 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 
-/**
- * Initializes a ValueArray structure.
- *
- * This function initializes the given ValueArray structure by setting its count and capacity to 0,
- * and its values pointer to NULL.
- *
- * @param array A pointer to the ValueArray structure to be initialized.
- */
 void initValueArray(ValueArray *array)
 {
     // TODO: error check if ptr is NULL
@@ -23,14 +15,9 @@ void initValueArray(ValueArray *array)
     array->values = NULL;
 }
 
-/**
- * Writes a value to a ValueArray.
- *
- * @param array The ValueArray to write to.
- * @param value The value to write.
- */
 void writeValueArray(ValueArray *array, Value value)
 {
+    // grow array and copy values if necessary
     if (array->capacity < array->count + 1)
     {
         int oldCapacity = array->capacity;
@@ -39,15 +26,10 @@ void writeValueArray(ValueArray *array, Value value)
                                    oldCapacity, array->capacity);
     }
 
-    array->values[array->count] = value;
-    array->count++;
+    array->values[array->count] = value; // write the value to the array
+    array->count++;                      // increment count of vars in array in use
 }
 
-/**
- * Frees the memory allocated for a ValueArray and initializes it to 0
- *
- * @param array The ValueArray to be freed.
- */
 void freeValueArray(ValueArray *array)
 {
     FREE_ARRAY(Value, array->values, array->capacity);
@@ -61,14 +43,15 @@ void printValue(Value value, uint16_t colorCode)
     {
     case VAL_BOOL:
         snprintf(buffer, sizeof(buffer), AS_BOOL(value) ? "true" : "false");
-        printf(AS_BOOL(value) ? "true" : "false");
+        Print_Color(buffer, colorCode);
         break;
     case VAL_NIL:
         snprintf(buffer, sizeof(buffer), "nil");
         Print_Color(buffer, colorCode);
         break;
     case VAL_NUMBER:
-        printf("%g", AS_NUMBER(value));
+        snprintf(buffer, sizeof(buffer), "%g", AS_NUMBER(value));
+        Print_Color(buffer, colorCode);
         break;
     case VAL_OBJ:
         printObject(value);

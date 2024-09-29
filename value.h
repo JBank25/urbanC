@@ -58,13 +58,36 @@ typedef struct
 
 typedef struct
 {
-    int capacity;
-    int count;
-    Value *values;
+    int capacity;  // total capacity of the array
+    int count;     // number of elements in the array currently in use
+    Value *values; // dynamic array of values
 } ValueArray;
 
 bool valueEquals(Value a, Value b);
+
+/**
+ * Initializes a ValueArray structure.
+ *
+ * This function initializes the given ValueArray structure by setting its count and capacity to 0,
+ * and its values pointer to NULL.
+ *
+ * @param array A pointer to the ValueArray structure to be initialized.
+ */
 void initValueArray(ValueArray *array);
+
+/**
+ * Writes a value to a ValueArray.
+ *
+ * @param array The ValueArray to write to.
+ * @param value The value to write to the ValueArrays values array.
+ */
 void writeValueArray(ValueArray *array, Value value);
+
+/**
+ * Frees the memory allocated for a ValueArray and initializes it to 0
+ *
+ * @param array The ValueArray to be freed.
+ */
 void freeValueArray(ValueArray *array);
+
 void printValue(Value value, uint16_t colorCode);
