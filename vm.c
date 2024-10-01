@@ -55,8 +55,8 @@ static bool isFalsey(Value value)
 
 static void concatenate()
 {
-    ObjString *b = AS_STRING(pop());
-    ObjString *a = AS_STRING(pop());
+    ObjString *b = AS_STRING(Vm_Pop());
+    ObjString *a = AS_STRING(Vm_Pop());
 
     int length = a->length + b->length;             // calculate length of the two strings to be concatenated
     char *chars = ALLOCATE(char, length + 1);       // allocate char array for the whole new string
@@ -65,7 +65,7 @@ static void concatenate()
     chars[length] = '\0';                           // NULL TERMINATE YOUR STRINGS
 
     ObjString *result = takeString(chars, length);
-    push(OBJ_VAL(result));
+    Vm_Push(OBJ_VAL(result));
 }
 
 /**
@@ -73,7 +73,7 @@ static void concatenate()
  * MOST important function by far in program. Majority of execution will
  * be spent inside of here
  */
-static InterpretResult run()
+static InterpretResult Vm_Run()
 {
 #define READ_BYTE() (*vm.ip++)
 // reads the next byte from the bytecode, treats the resulting number as an index, and
@@ -92,14 +92,18 @@ static InterpretResult run()
             runtimeError("Operands must be numbers.");  \
             return INTERPRET_RUNTIME_ERROR;             \
         }                                               \
-        double b = AS_NUMBER(pop());                    \
-        double a = AS_NUMBER(pop());                    \
-        push(valueType(a op b));                        \
+        double b = AS_NUMBER(Vm_Pop());                 \
+        double a = AS_NUMBER(Vm_Pop());                 \
+        Vm_Push(valueType(a op b));                     \
     } while (false)
 #define READ_STRING() AS_STRING(READ_CONSTANT())
 
     for (;;)
     {
+/*
+    With this enabled the VM will print out the current state of the stack and
+    the current instruction being executed. This is useful for debugging the VM
+*/
 #ifdef DEBUG_TRACE_EXECUTION
         char buffer[100];
         snprintf(buffer, sizeof(buffer), "Num Values on stack: %lu\n", (vm.stackTop - vm.stack));
@@ -118,33 +122,36 @@ static InterpretResult run()
 #endif // end DEBUG_TRACE_EXECUTION
 
         uint8_t instruction;
-        // grab byte pointed to by ip and advance ip
-        // given opcode, get right C code that implements instruction's semantics
+        /* grab byte pointed to by ip and advance ip
+           given opcode, get right C code that implements instruction's semantics
+           First byte of instruction will always be opcode. This process is bytecode dispacth
+           MOST IMPORTANT PART OF INTERPRETER from a performance perspective
+        */
         switch (instruction = READ_BYTE())
         {
         case OP_CONSTANT:
         {
             Value constant = READ_CONSTANT();
-            push(constant);
+            Vm_Push(constant);
             printf("\n");
             break;
         }
         case OP_NIL:
-            push(NIL_VAL);
+            Vm_Push(NIL_VAL);
             break;
         case OP_TRUE:
-            push(BOOL_VAL(true));
+            Vm_Push(BOOL_VAL(true));
             break;
         case OP_FALSE:
-            push(BOOL_VAL(false));
+            Vm_Push(BOOL_VAL(false));
             break;
         case OP_POP:
-            pop();
+            Vm_Pop();
             break;
         case OP_GET_LOCAL:
         {
             uint8_t slot = READ_BYTE();
-            push(vm.stack[slot]);
+            Vm_Push(vm.stack[slot]);
             break;
         }
         case OP_SET_LOCAL:
@@ -162,14 +169,14 @@ static InterpretResult run()
                 runtimeError("Undefined variable '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
-            push(value);
+            Vm_Push(value);
             break;
         }
         case OP_DEFINE_GLOBAL:
         {
             ObjString *name = READ_STRING();
             tableSet(&vm.globals, name, peek(0));
-            pop();
+            Vm_Pop();
             break;
         }
         case OP_SET_GLOBAL:
@@ -185,9 +192,9 @@ static InterpretResult run()
         }
         case OP_EQUAL:
         {
-            Value b = pop();
-            Value a = pop();
-            push(BOOL_VAL(valueEquals(a, b))); // can == on ANY pair of objects
+            Value b = Vm_Pop();
+            Value a = Vm_Pop();
+            Vm_Push(BOOL_VAL(valueEquals(a, b))); // can == on ANY pair of objects
             break;
         }
         case OP_GREATER:
@@ -205,9 +212,9 @@ static InterpretResult run()
             }
             else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
             {
-                double b = AS_NUMBER(pop());
-                double a = AS_NUMBER(pop());
-                push(NUMBER_VAL(a + b));
+                double b = AS_NUMBER(Vm_Pop());
+                double a = AS_NUMBER(Vm_Pop());
+                Vm_Push(NUMBER_VAL(a + b));
             }
             else
             {
@@ -224,7 +231,7 @@ static InterpretResult run()
                 runtimeError("Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
-            push(NUMBER_VAL(-AS_NUMBER(pop())));
+            Vm_Push(NUMBER_VAL(-AS_NUMBER(Vm_Pop())));
             break;
         case OP_SUBTRACT:
             BINARY_OP(NUMBER_VAL, -);
@@ -236,12 +243,12 @@ static InterpretResult run()
             BINARY_OP(NUMBER_VAL, /);
             break;
         case OP_NOT:
-            push(BOOL_VAL(isFalsey(pop())));
+            Vm_Push(BOOL_VAL(isFalsey(Vm_Pop())));
             break;
         case OP_PRINT:
         {
             // TODO: fix color printing here
-            printValue(pop(), 31);
+            printValue(Vm_Pop(), 31);
             printf("\n");
             break;
         }
@@ -280,7 +287,7 @@ static InterpretResult run()
 #undef READ_STRING
 }
 
-InterpretResult interpret(const char *source)
+InterpretResult Vm_Interpret(const char *source)
 {
     // create new empty chunk
     Chunk chunk;
@@ -298,33 +305,34 @@ InterpretResult interpret(const char *source)
     vm.chunk = &chunk;
     vm.ip = vm.chunk->code;
 
-    InterpretResult result = run();
+    // execute chunk
+    InterpretResult result = Vm_Run();
 
     Chunk_FreeChunk(&chunk);
     return result;
 }
 
-void initVM()
+void Vm_InitVm()
 {
     vm.objects = NULL;
     initTable(&vm.strings);
     resetStack(); // VM state must be initialized
 }
 
-void freeVM()
+void Vm_FreeVm()
 {
     initTable(&vm.globals);
     freeTable(&vm.strings);
     freeObjects();
 }
 
-void push(Value value)
+void Vm_Push(Value value)
 {
     *vm.stackTop = value; // deref and save value into stack
     vm.stackTop++;        // move top of stack to next entry
 }
 
-Value pop()
+Value Vm_Pop()
 {
     vm.stackTop--;
     return *vm.stackTop;

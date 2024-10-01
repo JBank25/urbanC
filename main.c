@@ -56,9 +56,9 @@ static char *readFile(const char *path)
 
 static void runFile(const char *path)
 {
-    char *source = readFile(path);              // read file of code
-    InterpretResult result = interpret(source); // execute
-    free(source);                               // free result I guess its on Heap ??
+    char *source = readFile(path);                 // read file of code
+    InterpretResult result = Vm_Interpret(source); // EXECUTE (interpret) the code
+    free(source);                                  // free result I guess its on Heap ??
 
     if (result == INTERPRET_COMPILE_ERROR)
         exit(65);
@@ -68,7 +68,7 @@ static void runFile(const char *path)
 
 int main(int argc, const char *argv[])
 {
-    initVM();
+    Vm_InitVm();
 
     // no args then drop into REPL
     // if (argc == 1)
@@ -86,6 +86,6 @@ int main(int argc, const char *argv[])
     //     exit(64);
     // }
 
-    freeVM();
+    Vm_FreeVm();
     return 0;
 }

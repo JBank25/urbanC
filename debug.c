@@ -41,8 +41,8 @@ static int Debug_ConstantInstruction(const char *name, Chunk *chunk, int offset)
 {
     //
     uint8_t constant = chunk->code[offset + 1];
-    printf("Instruction name: %-16s At Chunk Offset: %4d ", name, constant);
-    printf("Value: '");
+    printf("Instruction name: %-16s Constant Idx: %4d ", name, constant);
+    printf("Constant Idx Val: '");
     // TODO: fix number color here
     printValue(chunk->constants.values[constant], 32);
     printf("'\n");
@@ -91,11 +91,11 @@ int disassembleInstruction(Chunk *chunk, int offset)
     printf("Byte offset: %04d ", offset);
     if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1])
     {
-        printf("   | ");
+        printf("%-15s", "|");
     }
     else
     {
-        printf("%4d ", chunk->lines[offset]);
+        printf("Line Num: %-4d ", chunk->lines[offset]);
     }
 
     // grab the instruction at offset
