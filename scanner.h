@@ -52,6 +52,12 @@ typedef enum
     TOKEN_EOF
 } TokenType;
 
+/*
+    Simple example here, start will point to the original source string start like this
+    print hello;<NULL>
+          ^
+        strt
+*/
 typedef struct
 {
     TokenType type;    // Tells us type of token. Is token a number? identifier? operator?
@@ -60,5 +66,17 @@ typedef struct
     int line;          // line number associated with the token
 } Token;
 
-void initScanner(const char *source);
-Token scanToken();
+/**
+ * @brief Our scanner has a state, thus we should initialize it.
+ *
+ * @param source - This is the very first char on the very first line of the source code that
+ *                 will be scanned
+ */
+void Scanner_InitScanner(const char *source);
+
+/**
+ * @brief - This function will start at a new token when called.
+ *
+ * @return Token
+ */
+Token Scanner_ScanToken();

@@ -15,7 +15,7 @@
 // Globally declared virtual machine
 VM vm;
 
-static void resetStack()
+static void Vm_ResetStack()
 {
     vm.stackTop = vm.stack; // reset stack ptr to first element
 }
@@ -32,7 +32,7 @@ static void runtimeError(const char *format, ...)
     size_t instruction = vm.ip - vm.chunk->code - 1;
     int line = vm.chunk->lines[instruction];
     fprintf(stderr, "[line %d] in script\n", line);
-    resetStack();
+    Vm_ResetStack();
 }
 
 static Value peek(int distance)
@@ -294,7 +294,7 @@ InterpretResult Vm_Interpret(const char *source)
     Chunk_InitChunk(&chunk);
 
     // take user program and fill chunk w bytecode
-    if (!compile(source, &chunk))
+    if (!Compiler_Compile(source, &chunk))
     {
         // if errors in the program, free chunk and ERROR
         Chunk_FreeChunk(&chunk);
@@ -316,7 +316,7 @@ void Vm_InitVm()
 {
     vm.objects = NULL;
     initTable(&vm.strings);
-    resetStack(); // VM state must be initialized
+    Vm_ResetStack(); // VM state must be initialized
 }
 
 void Vm_FreeVm()
@@ -328,12 +328,14 @@ void Vm_FreeVm()
 
 void Vm_Push(Value value)
 {
+    // TODO: Errork checking here, dynamic expand stack??
     *vm.stackTop = value; // deref and save value into stack
     vm.stackTop++;        // move top of stack to next entry
 }
 
 Value Vm_Pop()
 {
+    // TODO: Errork checking here
     vm.stackTop--;
     return *vm.stackTop;
 }

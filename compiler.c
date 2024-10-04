@@ -143,7 +143,7 @@ static void advance()
     for (;;)
     {
         // grab next token and set parsers current token to it
-        parser.current = scanToken();
+        parser.current = Scanner_ScanToken();
         // NO lexical errors, rather special error tokens will be created and left to parser to report
         if (parser.current.type != TOKEN_ERROR)
             break;
@@ -1045,9 +1045,9 @@ static ParseRule *getRule(TokenType type)
     return &rules[type];
 }
 
-bool compile(const char *source, Chunk *chunk)
+bool Compiler_Compile(const char *source, Chunk *chunk)
 {
-    initScanner(source); // initialize the state of scanner
+    Scanner_InitScanner(source); // initialize the state of scanner
     Compiler compiler;
     initCompiler(&compiler);
     compilingChunk = chunk;

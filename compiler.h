@@ -5,4 +5,4 @@
 
 #include <stdbool.h>
 
-bool compile(const char *source, Chunk *chunk);
+bool Compiler_Compile(const char *source, Chunk *chunk);

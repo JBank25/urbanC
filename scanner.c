@@ -14,13 +14,7 @@ typedef struct
 
 Scanner scanner;
 
-/**
- * @brief Our scanner has a state, thus we should initialize it.
- *
- * @param source - This is the very first char on the very first line of the source code that
- *                 will be scanned
- */
-void initScanner(const char *source)
+void Scanner_InitScanner(const char *source)
 {
     scanner.start = source; // initialize our char ptrs to first char
     scanner.current = source;
@@ -360,12 +354,7 @@ static Token string()
 }
 
 // ***************** STAR OF SCANNER SHOW *****************************
-/**
- * @brief - This function will start at a new token when called.
- *
- * @return Token
- */
-Token scanToken()
+Token Scanner_ScanToken()
 {
     skipWhitespace();
 
