@@ -50,7 +50,7 @@ static bool isAlpha(char c)
  *
  * @return true if the scanner has reached the end of the input string, false otherwise.
  */
-static bool isAtEnd()
+static bool Scanner_IsAtEnd()
 {
     return *scanner.current == '\0';
 }
@@ -60,7 +60,7 @@ static bool isAtEnd()
  *
  * @return The character at the previous position.
  */
-static char advanceScanner()
+static char Scanner_AdvanceScanner()
 {
     scanner.current++;
     return scanner.current[-1];
@@ -84,7 +84,7 @@ static char peek()
  */
 static char peekNext()
 {
-    if (isAtEnd())
+    if (Scanner_IsAtEnd())
         return '\0';
     return scanner.current[1];
 }
@@ -104,7 +104,7 @@ static char peekNext()
 static bool match(char expected)
 {
     // edge case, check that we're not at end yet
-    if (isAtEnd())
+    if (Scanner_IsAtEnd())
         return false;
     // if the char scanner is currently pointed at != expected return false
     if (*scanner.current != expected)
@@ -124,7 +124,7 @@ static bool match(char expected)
  * @param type The type of the token.
  * @return The created token.
  */
-static Token makeToken(TokenType type)
+static Token Scanner_MakeToken(TokenType type)
 {
     Token token;
     token.type = type;
@@ -135,7 +135,7 @@ static Token makeToken(TokenType type)
 }
 
 /**
- * @brief Nearly identical to the makeToken fucntion, EXCEPT, this one
+ * @brief Nearly identical to the Scanner_MakeToken fucntion, EXCEPT, this one
  * is called when an error during scanning has occurred. Thus we will
  * populated this token with an error message and the appropriate values
  * for length, start, etc.
@@ -168,18 +168,18 @@ static void skipWhitespace()
         case ' ':
         case '\r':
         case '\t':
-            advanceScanner();
+            Scanner_AdvanceScanner();
             break;
         case '\n':
             scanner.line++;
-            advanceScanner();
+            Scanner_AdvanceScanner();
             break;
         case '/':
             if (peekNext() == '/')
             {
                 // A comment goes until the end of the line.
-                while (peek() != '\n' && !isAtEnd())
-                    advanceScanner();
+                while (peek() != '\n' && !Scanner_IsAtEnd())
+                    Scanner_AdvanceScanner();
             }
             else
             {
@@ -286,7 +286,7 @@ static Token identifier()
 {
     // continue until next char isnt a number or letter
     while (isAlpha(peek()) || isDigit(peek()))
-        advanceScanner();
+        Scanner_AdvanceScanner();
     /*
     grab token type. if the scanner held 'print' for ex.
     then currScannerTokenType should be TOKEN_PRINT. Check identifierType
@@ -294,7 +294,7 @@ static Token identifier()
     */
     TokenType currScannerTokenType = identifierType();
     // create a NEW identifier token
-    Token identifierToken = makeToken(currScannerTokenType);
+    Token identifierToken = Scanner_MakeToken(currScannerTokenType);
     return identifierToken;
 }
 
@@ -309,18 +309,18 @@ static Token number()
 {
     // move scanner along until non-digit char occurs
     while (isDigit(peek()))
-        advanceScanner();
+        Scanner_AdvanceScanner();
 
     // Look for a fractional part.
     if (peek() == '.' && isDigit(peekNext()))
     {
         // Consume the ".".
-        advanceScanner();
+        Scanner_AdvanceScanner();
         // move scanner along until non-digit char occurs
         while (isDigit(peek()))
-            advanceScanner();
+            Scanner_AdvanceScanner();
     }
-    Token newNumToken = makeToken(TOKEN_NUMBER);
+    Token newNumToken = Scanner_MakeToken(TOKEN_NUMBER);
     return newNumToken;
 }
 
@@ -337,20 +337,20 @@ static Token number()
 static Token string()
 {
     // break when we reach closing " or when we reach the end
-    while (peek() != '"' && !isAtEnd())
+    while (peek() != '"' && !Scanner_IsAtEnd())
     {
         // support multi-line strings
         if (peek() == '\n')
             scanner.line++;
-        advanceScanner();
+        Scanner_AdvanceScanner();
     }
     // if end reached, no closing " was found ERROR
-    if (isAtEnd())
+    if (Scanner_IsAtEnd())
         return errorToken("Unterminated string.");
 
     // The closing quote.
-    advanceScanner();
-    return makeToken(TOKEN_STRING);
+    Scanner_AdvanceScanner();
+    return Scanner_MakeToken(TOKEN_STRING);
 }
 
 // ***************** STAR OF SCANNER SHOW *****************************
@@ -363,11 +363,11 @@ Token Scanner_ScanToken()
     scanner.start = scanner.current;
 
     // Check if at the end of source code
-    if (isAtEnd())
-        return makeToken(TOKEN_EOF);
+    if (Scanner_IsAtEnd())
+        return Scanner_MakeToken(TOKEN_EOF);
 
     // advance the scanner by one token, c will hold first char at scanner.start
-    char c = advanceScanner();
+    char c = Scanner_AdvanceScanner();
 
     if (isAlpha(c)) // check for identifiers
         return identifier();
@@ -378,39 +378,39 @@ Token Scanner_ScanToken()
     switch (c)
     {
     case '(':
-        return makeToken(TOKEN_LEFT_PAREN); // single char token
+        return Scanner_MakeToken(TOKEN_LEFT_PAREN); // single char token
     case ')':
-        return makeToken(TOKEN_RIGHT_PAREN); // single char token
+        return Scanner_MakeToken(TOKEN_RIGHT_PAREN); // single char token
     case '{':
-        return makeToken(TOKEN_LEFT_BRACE); // single char token
+        return Scanner_MakeToken(TOKEN_LEFT_BRACE); // single char token
     case '}':
-        return makeToken(TOKEN_RIGHT_BRACE); // single char token
+        return Scanner_MakeToken(TOKEN_RIGHT_BRACE); // single char token
     case ';':
-        return makeToken(TOKEN_SEMICOLON); // single char token
+        return Scanner_MakeToken(TOKEN_SEMICOLON); // single char token
     case ',':
-        return makeToken(TOKEN_COMMA); // single char token
+        return Scanner_MakeToken(TOKEN_COMMA); // single char token
     case '.':
-        return makeToken(TOKEN_DOT); // single char token
+        return Scanner_MakeToken(TOKEN_DOT); // single char token
     case '-':
-        return makeToken(TOKEN_MINUS); // single char token
+        return Scanner_MakeToken(TOKEN_MINUS); // single char token
     case '+':
-        return makeToken(TOKEN_PLUS); // single char token
+        return Scanner_MakeToken(TOKEN_PLUS); // single char token
     case '/':
-        return makeToken(TOKEN_SLASH); // single char token
+        return Scanner_MakeToken(TOKEN_SLASH); // single char token
     case '*':
-        return makeToken(TOKEN_STAR); // single char token
-    case '!':                         // MAYBE double char token
-        return makeToken(
+        return Scanner_MakeToken(TOKEN_STAR); // single char token
+    case '!':                                 // MAYBE double char token
+        return Scanner_MakeToken(
             // two char punctionation here != check
             match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
     case '=': // MAYBE double char token
-        return makeToken(
+        return Scanner_MakeToken(
             match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
     case '<': // MAYBE double char token
-        return makeToken(
+        return Scanner_MakeToken(
             match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
     case '>': // MAYBE double char token
-        return makeToken(
+        return Scanner_MakeToken(
             match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
     case '"': //
         return string();
