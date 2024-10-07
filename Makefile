@@ -5,7 +5,7 @@ CC = gcc
 # -p: generate profiling information
 # -g: include debugging information
 # -Wall: enable all warnings
-CFLAGS = -O0 -g -Wall
+CFLAGS = -O0 -pg -g -Wall
 BUILD_DIR = build
 
 .PHONY: default all clean
@@ -24,7 +24,7 @@ $(BUILD_DIR)/%.o: %.c $(HEADERS)
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -Wall $(LIBS) -o $@
+	$(CC) $(CFLAGS) $(OBJECTS) -Wall $(LIBS) -o $@
 
 clean:
 	-rm -rf $(BUILD_DIR)

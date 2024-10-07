@@ -87,5 +87,5 @@ int main(int argc, const char *argv[])
     // }
 
     Vm_FreeVm();
-    return 0;
+    exit(0);
 }
