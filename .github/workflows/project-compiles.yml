@@ -22,5 +22,5 @@ jobs:
 
     - name: Run Compile Command in Docker
       run: |
-        docker run --rm project-build:latest make
+        docker run --rm -v ${{ github.workspace }}:/Compiler -w /Compiler project-build:latest
 
