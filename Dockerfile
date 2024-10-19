@@ -27,6 +27,8 @@ RUN mkdir -p /root/.config/zsh
 # Clone zsh-syntax-highlighting repository
 RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /root/.config/zsh/zsh-syntax-highlighting
 
+RUN curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/nektos/act/master/install.sh | bash
+
 # Configure zsh
 COPY .zshrc /root/.zshrc
 
