@@ -10,3 +10,8 @@ target_include_directories(chunk_lib
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
+
+# Dependency on header only subdir
+target_link_libraries(chunk_lib
+    PUBLIC common_lib value_lib # or PRIVATE depending on your needs
+)
