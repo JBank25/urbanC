@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvalue_lib.a CMakeFiles/value_lib.dir/src/value.c.o
+/usr/bin/ranlib libvalue_lib.a

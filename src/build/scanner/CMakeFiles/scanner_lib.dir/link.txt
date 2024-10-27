@@ -1,0 +1,2 @@
+/usr/bin/ar qc libscanner_lib.a CMakeFiles/scanner_lib.dir/src/scanner.c.o
+/usr/bin/ranlib libscanner_lib.a

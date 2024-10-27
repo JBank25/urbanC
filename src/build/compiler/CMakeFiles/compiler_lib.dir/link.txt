@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcompiler_lib.a CMakeFiles/compiler_lib.dir/src/compiler.c.o
+/usr/bin/ranlib libcompiler_lib.a

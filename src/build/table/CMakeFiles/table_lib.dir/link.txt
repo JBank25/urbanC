@@ -1,0 +1,2 @@
+/usr/bin/ar qc libtable_lib.a CMakeFiles/table_lib.dir/src/table.c.o
+/usr/bin/ranlib libtable_lib.a

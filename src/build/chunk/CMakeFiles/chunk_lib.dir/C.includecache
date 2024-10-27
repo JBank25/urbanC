@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../chunk/include/chunk.h
+common.h
+../chunk/include/common.h
+value.h
+../chunk/include/value.h
+
+../common/include/common.h
+stdbool.h
+-
+stdint.h
+-
+stdio.h
+-
+stddef.h
+-
+
+../memory/include/memory.h
+common.h
+../memory/include/common.h
+memory.h
+../memory/include/memory.h
+
+../value/include/value.h
+common.h
+../value/include/common.h
+
+/workspaces/urbanC/src/chunk/src/chunk.c
+chunk.h
+/workspaces/urbanC/src/chunk/src/chunk.h
+memory.h
+/workspaces/urbanC/src/chunk/src/memory.h
+value.h
+/workspaces/urbanC/src/chunk/src/value.h
+stdlib.h
+-
+

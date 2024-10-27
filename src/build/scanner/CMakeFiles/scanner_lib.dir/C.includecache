@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../common/include/common.h
+stdbool.h
+-
+stdint.h
+-
+stdio.h
+-
+stddef.h
+-
+
+../scanner/include/scanner.h
+
+/workspaces/urbanC/src/scanner/src/scanner.c
+scanner.h
+/workspaces/urbanC/src/scanner/src/scanner.h
+common.h
+/workspaces/urbanC/src/scanner/src/common.h
+stdio.h
+-
+string.h
+-
+
