@@ -27,8 +27,8 @@ RUN mkdir -p /root/.config/zsh
 # Clone zsh-syntax-highlighting repository
 RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /root/.config/zsh/zsh-syntax-highlighting
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/nektos/act/master/install.sh | bash
-
+# This needs some more looking at, actions run locally 
+# RUN curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/nektos/act/master/install.sh | bash
 
 # Set the default command to zsh
 CMD ["zsh"]
