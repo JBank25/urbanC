@@ -6,9 +6,18 @@ message("Building module test target:	 				${MODULE_TEST_TARGET}")
 message("Test Suite for ${MODULE_TARGET}: 				${MODULE_TEST_SUITE}")
 message("*****************************************************")
 
-add_library(${MODULE_TARGET} PUBLIC
-    src/chunk.c)
+add_library(${MODULE_TARGET} src/chunk.c)
+
+target_link_libraries(${MODULE_TARGET}
+    PUBLIC
+    Memory
+    Value
+    )
 
 target_include_directories(${MODULE_TARGET}
         PUBLIC
-		include/)
+		include/
+        Common
+        Value
+        Memory
+        )

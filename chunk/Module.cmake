@@ -1,3 +1,3 @@
-set(MODULE_TARGET "Chunkg")
+set(MODULE_TARGET "Chunk")
 set(MODULE_TEST_TARGET "")
 set(MODULE_TEST_SUITE "")

@@ -13,7 +13,7 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 # TODO: Might need later
 # enable_testing()
 
-add_executable(${PROJECT_NAME} ./main.cpp)
+add_executable(${PROJECT_NAME} ./main.c)
 
 add_subdirectory(chunk/)
 add_subdirectory(common/)
@@ -28,15 +28,29 @@ add_subdirectory(vm/)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC 
                         # Put module names here
-                        NetCommon
-                        NetServer
-                        NetConnection
+                        Chunk
+                        Common
+                        Compiler
+                        Debug
+                        Memory
+                        Object
+                        Scanner
+                        Table
+                        Value
+                        Vm
                         )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
                     "${PROJECT_BINARY_DIR}"
                     # Put module paths here
-                    "${PROJECT_SOURCE_DIR}/src/NetCommon"
-                    "${PROJECT_SOURCE_DIR}/src/NetServer"
-                    "${PROJECT_SOURCE_DIR}/src/NetConnection"
+                    "${PROJECT_SOURCE_DIR}/chunk/"
+                    "${PROJECT_SOURCE_DIR}/common"
+                    "${PROJECT_SOURCE_DIR}/compiler"
+                    "${PROJECT_SOURCE_DIR}/debug"
+                    "${PROJECT_SOURCE_DIR}/memory"
+                    "${PROJECT_SOURCE_DIR}/object"
+                    "${PROJECT_SOURCE_DIR}/scanner"
+                    "${PROJECT_SOURCE_DIR}/table"
+                    "${PROJECT_SOURCE_DIR}/value"
+                    "${PROJECT_SOURCE_DIR}/vm"
 )
