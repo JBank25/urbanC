@@ -44,7 +44,7 @@ static int Debug_ConstantInstruction(const char *name, Chunk *chunk, int offset)
     printf("Instruction name: %-16s Constant Idx: %4d ", name, constant);
     printf("Constant Idx Val: '");
     // TODO: fix number color here
-    printValue(chunk->constants.values[constant], 32);
+    Value_printValue(chunk->constants.values[constant], 32);
     printf("'\n");
     // OP_CONSTANT is a two-byte instruction, need to increment by 2 to get to next instruction
     return offset + 2;
@@ -60,7 +60,7 @@ void Print_Color(const char *text, int color_code)
  *
  * This function takes a Chunk object and a name as input parameters and prints the disassembled
  * instructions of the chunk to the console. It iterates over the bytecode instructions in the
- * chunk and calls the disassembleInstruction function to disassemble each instruction.
+ * chunk and calls the Debug_disassembleInstruction function to disassemble each instruction.
  *
  * @param chunk The Chunk object to be disassembled.
  * @param name  The name of the chunk.
@@ -71,9 +71,9 @@ void disassembleChunk(Chunk *chunk, const char *name)
 
     for (uint32_t offset = 0; offset < chunk->count;)
     {
-        // rather than iterating offset by a fixed amount, we let disassembleInstruction increment
+        // rather than iterating offset by a fixed amount, we let Debug_disassembleInstruction increment
         // based on the size of instruction is has just disassembled
-        offset = disassembleInstruction(chunk, offset);
+        offset = Debug_disassembleInstruction(chunk, offset);
     }
 }
 
@@ -85,9 +85,9 @@ void disassembleChunk(Chunk *chunk, const char *name)
  *
  * @return offset of the next instruction
  */
-int disassembleInstruction(Chunk *chunk, int offset)
+int Debug_disassembleInstruction(Chunk *chunk, int offset)
 {
-    // print byte offset at a given instruction
+    // print byte offset of the instruction within the chunk
     printf("Byte offset: %04d ", offset);
     if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1])
     {
@@ -98,7 +98,7 @@ int disassembleInstruction(Chunk *chunk, int offset)
         printf("Line Num: %-4d ", chunk->lines[offset]);
     }
 
-    // grab the instruction at offset
+    // grab the instruction (opcode) at the offset
     uint8_t instruction = chunk->code[offset];
 
     // switch on instruction and use utility function for displaying it

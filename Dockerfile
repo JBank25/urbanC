@@ -1,10 +1,5 @@
 FROM debian:bullseye-slim
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-WORKDIR /app
-COPY . .
-
 RUN apt-get update && apt-get install -y \
     gdb \
     zsh \

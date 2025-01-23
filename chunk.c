@@ -12,7 +12,7 @@ void Chunk_InitChunk(Chunk *chunk)
     chunk->code = NULL;
     chunk->lines = NULL;
     // init ValueArray as well for constants in chunk
-    initValueArray(&chunk->constants);
+    Value_Value_initValueArray(&chunk->constants);
 }
 
 void Chunk_WriteChunk(Chunk *chunk, uint8_t byte, int line)

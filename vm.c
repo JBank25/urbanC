@@ -113,12 +113,12 @@ static InterpretResult Vm_Run()
         {
 
             Print_Color("[ ", STACK_ANSI_COLOR_CYAN);
-            printValue(*slot, STACK_ANSI_COLOR_CYAN);
+            Value_printValue(*slot, STACK_ANSI_COLOR_CYAN);
             Print_Color(" ]", STACK_ANSI_COLOR_CYAN);
         }
         printf("\n");
         // Grab relative offset of ip from beginning of bytecide
-        disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
+        Debug_disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
 #endif // end DEBUG_TRACE_EXECUTION
 
         uint8_t instruction;
@@ -194,7 +194,7 @@ static InterpretResult Vm_Run()
         {
             Value b = Vm_Pop();
             Value a = Vm_Pop();
-            Vm_Push(BOOL_VAL(valueEquals(a, b))); // can == on ANY pair of objects
+            Vm_Push(BOOL_VAL(Value_valueEquals(a, b))); // can == on ANY pair of objects
             break;
         }
         case OP_GREATER:
@@ -248,7 +248,7 @@ static InterpretResult Vm_Run()
         case OP_PRINT:
         {
             // TODO: fix color printing here
-            printValue(Vm_Pop(), 31);
+            Value_printValue(Vm_Pop(), 31);
             printf("\n");
             break;
         }

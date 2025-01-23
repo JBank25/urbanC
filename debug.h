@@ -17,4 +17,4 @@
  */
 void Print_Color(const char *text, int color_code);
 void disassembleChunk(Chunk *chunk, const char *name);
-int disassembleInstruction(Chunk *chunk, int offset);
+int Debug_disassembleInstruction(Chunk *chunk, int offset);

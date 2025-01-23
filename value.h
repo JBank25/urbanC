@@ -63,7 +63,7 @@ typedef struct
     Value *values; // dynamic array of values
 } ValueArray;
 
-bool valueEquals(Value a, Value b);
+bool Value_valueEquals(Value a, Value b);
 
 /**
  * Initializes a ValueArray structure.
@@ -73,7 +73,7 @@ bool valueEquals(Value a, Value b);
  *
  * @param array A pointer to the ValueArray structure to be initialized.
  */
-void initValueArray(ValueArray *array);
+void Value_Value_initValueArray(ValueArray *array);
 
 /**
  * Writes a value to a ValueArray.
@@ -90,4 +90,4 @@ void writeValueArray(ValueArray *array, Value value);
  */
 void freeValueArray(ValueArray *array);
 
-void printValue(Value value, uint16_t colorCode);
+void Value_printValue(Value value, uint16_t colorCode);

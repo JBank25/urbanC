@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void initValueArray(ValueArray *array)
+void Value_Value_initValueArray(ValueArray *array)
 {
     // TODO: error check if ptr is NULL
     array->count = 0;
@@ -33,10 +33,10 @@ void writeValueArray(ValueArray *array, Value value)
 void freeValueArray(ValueArray *array)
 {
     FREE_ARRAY(Value, array->values, array->capacity);
-    initValueArray(array);
+    Value_Value_initValueArray(array);
 }
 
-void printValue(Value value, uint16_t colorCode)
+void Value_printValue(Value value, uint16_t colorCode)
 {
     char buffer[100];
     switch (value.type)
@@ -64,7 +64,7 @@ void printValue(Value value, uint16_t colorCode)
 // For example, the number 0 is equivalent to the string “0” in JavaScript.
 // This looseness was a large enough source of pain that JS added a separate
 // “strict equality” operator, ===.
-bool valueEquals(Value a, Value b)
+bool Value_valueEquals(Value a, Value b)
 {
     // if types not the same, def not equal
     if (a.type != b.type)
