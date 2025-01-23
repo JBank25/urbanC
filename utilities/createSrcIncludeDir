@@ -1,0 +1,35 @@
+# Moves all .h into an include/ and all
+# .c into a src/ within a directory which it accepts
+# as input arg
+
+#!/bin/bash
+
+# Check if a path argument is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <path_to_directory>"
+    exit 1
+fi
+
+# Store the provided path
+target_dir="$1"
+
+# Check if the provided path exists and is a directory
+if [ ! -d "$target_dir" ]; then
+    echo "Error: '$target_dir' is not a valid directory."
+    exit 1
+fi
+
+# Change to the target directory
+cd "$target_dir" || exit 1
+
+# Create the 'include' and 'src' directories if they don't exist
+mkdir -p include src
+
+# Move all .h files to the 'include' directory
+find . -maxdepth 1 -type f -name "*.h" -exec mv {} include/ \;
+
+# Move all .c files to the 'src' directory
+find . -maxdepth 1 -type f -name "*.c" -exec mv {} src/ \;
+
+echo "Operation completed in '$target_dir'. .h files moved to 'include' and .c files moved to 'src'."
+
