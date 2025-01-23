@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void Value_Value_initValueArray(ValueArray *array)
+void Value_initValueArray(ValueArray *array)
 {
     // TODO: error check if ptr is NULL
     array->count = 0;
@@ -33,7 +33,7 @@ void writeValueArray(ValueArray *array, Value value)
 void freeValueArray(ValueArray *array)
 {
     FREE_ARRAY(Value, array->values, array->capacity);
-    Value_Value_initValueArray(array);
+    Value_initValueArray(array);
 }
 
 void Value_printValue(Value value, uint16_t colorCode)

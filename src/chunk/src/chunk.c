@@ -12,7 +12,7 @@ void Chunk_InitChunk(Chunk *chunk)
     chunk->code = NULL;
     chunk->lines = NULL;
     // init ValueArray as well for constants in chunk
-    Value_Value_initValueArray(&chunk->constants);
+    Value_initValueArray(&chunk->constants);
 }
 
 void Chunk_WriteChunk(Chunk *chunk, uint8_t byte, int line)
@@ -42,7 +42,8 @@ void Chunk_FreeChunk(Chunk *chunk)
 
 int Chunk_AddConstant(Chunk *chunk, Value value)
 {
+    // writes value to chuns array
     writeValueArray(&chunk->constants, value);
-    // return index where last constant was appended so we can locate it later
+    // return index where constant was appended so we can locate it later
     return chunk->constants.count - 1;
 }

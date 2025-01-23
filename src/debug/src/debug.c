@@ -37,9 +37,9 @@ static int jumpInstruction(const char *name, int sign, Chunk *chunk, int offset)
  * @param offset - offset of the instruction in the chunk
  * @return int - offset of the next instruction
  */
-static int Debug_ConstantInstruction(const char *name, Chunk *chunk, int offset)
+static int Debug_constantInstruction(const char *name, Chunk *chunk, int offset)
 {
-    //
+    // opcode (instruction) lives at offset 0, constant at offset 1 for OP_CONSTANT instruction
     uint8_t constant = chunk->code[offset + 1];
     printf("Instruction name: %-16s Constant Idx: %4d ", name, constant);
     printf("Constant Idx Val: '");
@@ -105,7 +105,7 @@ int Debug_disassembleInstruction(Chunk *chunk, int offset)
     switch (instruction)
     {
     case OP_CONSTANT:
-        return Debug_ConstantInstruction("OP_CONSTANT", chunk, offset);
+        return Debug_constantInstruction("OP_CONSTANT", chunk, offset);
     case OP_NIL:
         return simpleInstruction("OP_NIL", offset);
     case OP_TRUE:
@@ -115,7 +115,7 @@ int Debug_disassembleInstruction(Chunk *chunk, int offset)
     case OP_EQUAL:
         return simpleInstruction("OP_EQUAL", offset);
     case OP_SET_GLOBAL:
-        return Debug_ConstantInstruction("OP_SET_GLOBAL", chunk, offset);
+        return Debug_constantInstruction("OP_SET_GLOBAL", chunk, offset);
     case OP_POP:
         return simpleInstruction("OP_POP", offset);
     case OP_GREATER:
@@ -137,13 +137,13 @@ int Debug_disassembleInstruction(Chunk *chunk, int offset)
     case OP_PRINT:
         return simpleInstruction("OP_PRINT", offset);
     case OP_DEFINE_GLOBAL:
-        return Debug_ConstantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
+        return Debug_constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
     case OP_GET_LOCAL:
         return byteInstruction("OP_GET_LOCAL", chunk, offset);
     case OP_SET_LOCAL:
         return byteInstruction("OP_SET_LOCAL", chunk, offset);
     case OP_GET_GLOBAL:
-        return Debug_ConstantInstruction("OP_GET_GLOBAL", chunk, offset);
+        return Debug_constantInstruction("OP_GET_GLOBAL", chunk, offset);
     case OP_JUMP:
         return jumpInstruction("OP_JUMP", 1, chunk, offset);
     case OP_JUMP_IF_FALSE:

@@ -69,7 +69,7 @@ Parser parser;
 Compiler *current = NULL;
 Chunk *compilingChunk;
 
-static void printStackTrace()
+static void Compiler_PrintStackTrace()
 {
     void *stack_traces[MAX_STACK_FRAMES];
     int trace_size = backtrace(stack_traces, MAX_STACK_FRAMES);
@@ -119,7 +119,7 @@ static void errorAt(Token *token, const char *message)
 
 static void error(const char *message)
 {
-    printStackTrace();
+    Compiler_PrintStackTrace();
     // often the case we'll report an error at location of token
     // we just consumed. This function (error) rather than errorAtCurrent will
     // be used for that

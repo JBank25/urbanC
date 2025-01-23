@@ -13,18 +13,9 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 # TODO: Might need later
 # enable_testing()
 
-add_executable(${PROJECT_NAME} ./main.c)
+add_executable(${PROJECT_NAME} ./src/main.c)
 
-add_subdirectory(chunk/)
-add_subdirectory(common/)
-add_subdirectory(compiler/)
-add_subdirectory(debug/)
-add_subdirectory(memory/)
-add_subdirectory(object/)
-add_subdirectory(scanner/)
-add_subdirectory(table/)
-add_subdirectory(value/)
-add_subdirectory(vm/)
+add_subdirectory(src/)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC 
                         # Put module names here
