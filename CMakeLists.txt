@@ -11,7 +11,7 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 # find_package()
 
 # TODO: Might need later
-# enable_testing()
+enable_testing()
 
 add_executable(${PROJECT_NAME} ./src/main.c)
 

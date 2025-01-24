@@ -1,0 +1,9 @@
+[requires]
+unity/2.6.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout

@@ -21,3 +21,5 @@ target_include_directories(${MODULE_TARGET}
         Value
         Memory
         )
+
+add_subdirectory(test/)
