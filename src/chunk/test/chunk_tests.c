@@ -1,3 +1,5 @@
+#include "chunk.h"
+
 #include "unity.h"
 #include "unity/unity.h"
 #include "unity/unity_internals.h"
@@ -13,14 +15,17 @@ void tearDown(void) {
 
 void dummy(void)
 {
-  TEST_ASSERT_EQUAL(1, 2);
+    Chunk testChunk = {0};
+    testChunk.count = 1;
+    Chunk_InitChunk(&testChunk);
+    TEST_ASSERT_EQUAL(testChunk.count, 0);
 }
  
 int main(void)
 {
     UNITY_BEGIN();
 
-  RUN_TEST(dummy);
+    RUN_TEST(dummy);
  
   return UNITY_END();
 }
