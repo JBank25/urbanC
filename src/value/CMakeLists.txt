@@ -19,3 +19,5 @@ target_link_libraries(${MODULE_TARGET}
 target_include_directories(${MODULE_TARGET}
         PUBLIC
 		include/)
+
+add_subdirectory(test/)
