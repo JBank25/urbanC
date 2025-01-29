@@ -8,12 +8,12 @@
 
 #include "fff.h"
 DEFINE_FFF_GLOBALS;
-//FAKE_VOID_FUNC(Value_initValueArray, ValueArray *);
+FAKE_VOID_FUNC(Value_initValueArray, ValueArray *);
 #include "value.h"
 
 void setUp(void) 
 {
-    // RESET_FAKE(Value_initValueArray);
+    RESET_FAKE(Value_initValueArray);
 
 }
 
@@ -26,6 +26,7 @@ void Test_Chunk_InitChunk(void)
     Chunk testChunk = {};
     Chunk_InitChunk(&testChunk);
     TEST_ASSERT_EQUAL(testChunk.count, 0);
+    TEST_ASSERT_EQUAL(Value_initValueArray_fake.call_count, 0);
 }
 
 void Test_Chunk_AddConstant(void)
