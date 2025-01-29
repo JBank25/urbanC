@@ -1,5 +1,6 @@
 [requires]
 unity/2.6.0
+fff/1.1
 
 [generators]
 CMakeDeps

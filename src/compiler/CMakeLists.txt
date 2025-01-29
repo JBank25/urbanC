@@ -9,12 +9,15 @@ message("*****************************************************")
 add_library(${MODULE_TARGET} src/compiler.c)
 
 target_link_libraries(${MODULE_TARGET}
-    PUBLIC
+    PRIVATE
     Chunk
     Scanner
     Value
     Debug
     Common
+    PUBLIC
+    Object
+    Vm
     )
 target_include_directories(${MODULE_TARGET}
         PUBLIC
