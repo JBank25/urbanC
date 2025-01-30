@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void Value_initValueArray(ValueArray *array)
+void Value_initValueArray(ValueArray *array) 
 {
     // TODO: error check if ptr is NULL
     array->count = 0;

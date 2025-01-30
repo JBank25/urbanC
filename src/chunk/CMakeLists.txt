@@ -10,16 +10,15 @@ add_library(${MODULE_TARGET} src/chunk.c)
 
 target_link_libraries(${MODULE_TARGET}
     PUBLIC
-    Memory
+    Common
     Value
+    PRIVATE
+    Memory
     )
 
 target_include_directories(${MODULE_TARGET}
         PUBLIC
 		include/
-        Common
-        Value
-        Memory
         )
 
 add_subdirectory(test/)

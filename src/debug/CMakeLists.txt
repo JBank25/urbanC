@@ -11,6 +11,7 @@ add_library(${MODULE_TARGET} src/debug.c)
 target_link_libraries(${MODULE_TARGET}
     PUBLIC
     Chunk
+    PRIVATE
     Value
     Common
     )

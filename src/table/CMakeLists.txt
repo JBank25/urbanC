@@ -9,10 +9,12 @@ message("*****************************************************")
 add_library(${MODULE_TARGET} src/table.c)
 
 target_link_libraries(${MODULE_TARGET}
+    PRIVATE
+    Value
+    Common
     PUBLIC
     Memory
     Object
-    Value
     )
 
 target_include_directories(${MODULE_TARGET}

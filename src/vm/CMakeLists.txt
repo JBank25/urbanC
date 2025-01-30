@@ -10,12 +10,14 @@ add_library(${MODULE_TARGET} src/vm.c)
 
 target_link_libraries(${MODULE_TARGET}
     PUBLIC
+    Value
+    Table
     Chunk
+    PRIVATE
     Compiler
     Debug
     Memory
     Object
-    Value
     Common
     )
 

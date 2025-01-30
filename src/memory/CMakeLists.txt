@@ -10,6 +10,8 @@ add_library(${MODULE_TARGET} src/memory.c)
 
 target_link_libraries(${MODULE_TARGET}
     PUBLIC
+    Common
+    PRIVATE
     Object
     Vm
     )

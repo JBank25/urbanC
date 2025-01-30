@@ -10,9 +10,12 @@ add_library(${MODULE_TARGET} src/object.c)
 
 target_link_libraries(${MODULE_TARGET}
     PUBLIC
+    Chunk
+    Common
+    Value
+    PRIVATE
     Memory
     Table
-    Value
     Vm
     )
 

@@ -73,7 +73,7 @@ bool Value_valueEquals(Value a, Value b);
  *
  * @param array A pointer to the ValueArray structure to be initialized.
  */
-void Value_initValueArray(ValueArray *array);
+void Value_initValueArray(ValueArray *array) __attribute__((weak));
 
 /**
  * Writes a value to a ValueArray.

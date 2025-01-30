@@ -75,51 +75,55 @@ static void concatenate()
  */
 static InterpretResult Vm_Run()
 {
-#define READ_BYTE() (*vm.ip++)
-// reads the next byte from the bytecode, treats the resulting number as an index, and
-// looks up the corresponding Value in the chunk’s constant table
-#define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
-// yank next two bytes from chunk and build 16 bit integer from them
-#define READ_SHORT() \
-    (vm.ip += 2, (uint16_t)((vm.ip[-2] << 8) | vm.ip[-1]))
-// funny looking syntax here, but gives you a way to contain multiple statements
-// inside a block that also permits a semicolon at the end.
-#define BINARY_OP(valueType, op)                        \
-    do                                                  \
-    {                                                   \
-        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) \
-        {                                               \
-            runtimeError("Operands must be numbers.");  \
-            return INTERPRET_RUNTIME_ERROR;             \
-        }                                               \
-        double b = AS_NUMBER(Vm_Pop());                 \
-        double a = AS_NUMBER(Vm_Pop());                 \
-        Vm_Push(valueType(a op b));                     \
-    } while (false)
-#define READ_STRING() AS_STRING(READ_CONSTANT())
 
-    for (;;)
-    {
-/*
-    With this enabled the VM will print out the current state of the stack and
-    the current instruction being executed. This is useful for debugging the VM
-*/
-#ifdef DEBUG_TRACE_EXECUTION
-        char buffer[100];
-        snprintf(buffer, sizeof(buffer), "Num Values on stack: %lu\n", (vm.stackTop - vm.stack));
-        Print_Color(buffer, STACK_ANSI_COLOR_CYAN); // 32 is the color code for green
-        // printf("Num Values on stack: %lu\n", (vm.stackTop - vm.stack));
-        for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
+    // Read byte pointed to by ip and advance ip
+    #define READ_BYTE() (*vm.ip++)
+    /*
+        Read next byte, treat this byte as an index and look up the
+        corresponding Value in the chunk's constant table
+    */
+    #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
+    // yank next two bytes from chunk and build 16 bit integer from them
+    #define READ_SHORT() \
+        (vm.ip += 2, (uint16_t)((vm.ip[-2] << 8) | vm.ip[-1]))
+    // funny looking syntax here, but gives you a way to contain multiple statements
+    // inside a block that also permits a semicolon at the end.
+    #define BINARY_OP(valueType, op)                        \
+        do                                                  \
+        {                                                   \
+            if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) \
+            {                                               \
+                runtimeError("Operands must be numbers.");  \
+                return INTERPRET_RUNTIME_ERROR;             \
+            }                                               \
+            double b = AS_NUMBER(Vm_Pop());                 \
+            double a = AS_NUMBER(Vm_Pop());                 \
+            Vm_Push(valueType(a op b));                     \
+        } while (false)
+    #define READ_STRING() AS_STRING(READ_CONSTANT())
+
+        for (;;)
         {
+    /*
+        With this enabled the VM will print out the current state of the stack and
+        the current instruction being executed. This is useful for debugging the VM
+    */
+    #ifdef DEBUG_TRACE_EXECUTION
+            char buffer[100];
+            snprintf(buffer, sizeof(buffer), "Num Values on stack: %lu\n", (vm.stackTop - vm.stack));
+            Print_Color(buffer, STACK_ANSI_COLOR_CYAN); // 32 is the color code for green
+            // printf("Num Values on stack: %lu\n", (vm.stackTop - vm.stack));
+            for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
+            {
 
-            Print_Color("[ ", STACK_ANSI_COLOR_CYAN);
-            Value_printValue(*slot, STACK_ANSI_COLOR_CYAN);
-            Print_Color(" ]", STACK_ANSI_COLOR_CYAN);
-        }
-        printf("\n");
-        // Grab relative offset of ip from beginning of bytecide
-        Debug_disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
-#endif // end DEBUG_TRACE_EXECUTION
+                Print_Color("[ ", STACK_ANSI_COLOR_CYAN);
+                Value_printValue(*slot, STACK_ANSI_COLOR_CYAN);
+                Print_Color(" ]", STACK_ANSI_COLOR_CYAN);
+            }
+            printf("\n");
+            // Grab relative offset of ip from beginning of bytecide
+            Debug_disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
+    #endif // end DEBUG_TRACE_EXECUTION
 
         uint8_t instruction;
         /* grab byte pointed to by ip and advance ip
@@ -129,162 +133,163 @@ static InterpretResult Vm_Run()
         */
         switch (instruction = READ_BYTE())
         {
-        case OP_CONSTANT:
-        {
-            Value constant = READ_CONSTANT();
-            Vm_Push(constant);
-            printf("\n");
-            break;
-        }
-        case OP_NIL:
-            Vm_Push(NIL_VAL);
-            break;
-        case OP_TRUE:
-            Vm_Push(BOOL_VAL(true));
-            break;
-        case OP_FALSE:
-            Vm_Push(BOOL_VAL(false));
-            break;
-        case OP_POP:
-            Vm_Pop();
-            break;
-        case OP_GET_LOCAL:
-        {
-            uint8_t slot = READ_BYTE();
-            Vm_Push(vm.stack[slot]);
-            break;
-        }
-        case OP_SET_LOCAL:
-        {
-            uint8_t slot = READ_BYTE();
-            vm.stack[slot] = peek(0);
-            break;
-        }
-        case OP_GET_GLOBAL:
-        {
-            ObjString *name = READ_STRING();
-            Value value;
-            if (!tableGet(&vm.globals, name, &value))
+            case OP_CONSTANT:
             {
-                runtimeError("Undefined variable '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
+                Value constant = READ_CONSTANT();
+                Vm_Push(constant);
+                printf("\n");
+                break;
             }
-            Vm_Push(value);
-            break;
-        }
-        case OP_DEFINE_GLOBAL:
-        {
-            ObjString *name = READ_STRING();
-            tableSet(&vm.globals, name, peek(0));
-            Vm_Pop();
-            break;
-        }
-        case OP_SET_GLOBAL:
-        {
-            ObjString *name = READ_STRING();
-            if (tableSet(&vm.globals, name, peek(0)))
+            case OP_NIL:
+                Vm_Push(NIL_VAL);
+                break;
+            case OP_TRUE:
+                Vm_Push(BOOL_VAL(true));
+                break;
+            case OP_FALSE:
+                Vm_Push(BOOL_VAL(false));
+                break;
+            case OP_POP:
+                Vm_Pop();
+                break;
+            case OP_GET_LOCAL:
             {
-                tableDelete(&vm.globals, name);
-                runtimeError("Undefined variable '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
+                uint8_t slot = READ_BYTE();
+                Vm_Push(vm.stack[slot]);
+                break;
             }
-            break;
-        }
-        case OP_EQUAL:
-        {
-            Value b = Vm_Pop();
-            Value a = Vm_Pop();
-            Vm_Push(BOOL_VAL(Value_valueEquals(a, b))); // can == on ANY pair of objects
-            break;
-        }
-        case OP_GREATER:
-            BINARY_OP(BOOL_VAL, >);
-            break;
-        case OP_LESS:
-            BINARY_OP(BOOL_VAL, <);
-            break;
-        case OP_ADD:
-        {
-            // String contatencation SUPPORTED NICE
-            if (IS_STRING(peek(0)) && IS_STRING(peek(1)))
+            case OP_SET_LOCAL:
             {
-                concatenate();
+                uint8_t slot = READ_BYTE();
+                vm.stack[slot] = peek(0);
+                break;
             }
-            else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
+            case OP_GET_GLOBAL:
             {
-                double b = AS_NUMBER(Vm_Pop());
-                double a = AS_NUMBER(Vm_Pop());
-                Vm_Push(NUMBER_VAL(a + b));
+                ObjString *name = READ_STRING();
+                Value value;
+                if (!tableGet(&vm.globals, name, &value))
+                {
+                    runtimeError("Undefined variable '%s'.", name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                Vm_Push(value);
+                break;
             }
-            else
+            case OP_DEFINE_GLOBAL:
             {
-                runtimeError(
-                    "Operands must be two numbers or two strings.");
-                return INTERPRET_RUNTIME_ERROR;
+                ObjString *name = READ_STRING();
+                tableSet(&vm.globals, name, peek(0));
+                Vm_Pop();
+                break;
             }
-            break;
-        }
-        case OP_NEGATE:
-            // ensure Value type being used for negation is a number
-            if (!IS_NUMBER(peek(0)))
+            case OP_SET_GLOBAL:
             {
-                runtimeError("Operand must be a number.");
-                return INTERPRET_RUNTIME_ERROR;
+                ObjString *name = READ_STRING();
+                if (tableSet(&vm.globals, name, peek(0)))
+                {
+                    tableDelete(&vm.globals, name);
+                    runtimeError("Undefined variable '%s'.", name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
             }
-            Vm_Push(NUMBER_VAL(-AS_NUMBER(Vm_Pop())));
-            break;
-        case OP_SUBTRACT:
-            BINARY_OP(NUMBER_VAL, -);
-            break;
-        case OP_MULTIPLY:
-            BINARY_OP(NUMBER_VAL, *);
-            break;
-        case OP_DIVIDE:
-            BINARY_OP(NUMBER_VAL, /);
-            break;
-        case OP_NOT:
-            Vm_Push(BOOL_VAL(isFalsey(Vm_Pop())));
-            break;
-        case OP_PRINT:
-        {
-            // TODO: fix color printing here
-            Value_printValue(Vm_Pop(), 31);
-            printf("\n");
-            break;
-        }
-        case OP_JUMP:
-        {
-            uint16_t offset = READ_SHORT();
-            vm.ip += offset;
-            break;
-        }
-        case OP_JUMP_IF_FALSE:
-        {
-            // offset tells us how much to increment ip in the event that the if statement is false.
-            // offset will jump over the body of the conditional
-            uint16_t offset = READ_SHORT();
-            if (isFalsey(peek(0)))
+            case OP_EQUAL:
+            {
+                Value b = Vm_Pop();
+                Value a = Vm_Pop();
+                Vm_Push(BOOL_VAL(Value_valueEquals(a, b))); // can == on ANY pair of objects
+                break;
+            }
+            case OP_GREATER:
+                BINARY_OP(BOOL_VAL, >);
+                break;
+            case OP_LESS:
+                BINARY_OP(BOOL_VAL, <);
+                break;
+            case OP_ADD:
+            {
+                // String contatencation SUPPORTED NICE
+                if (IS_STRING(peek(0)) && IS_STRING(peek(1)))
+                {
+                    concatenate();
+                }
+                else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
+                {
+                    double b = AS_NUMBER(Vm_Pop());
+                    double a = AS_NUMBER(Vm_Pop());
+                    Vm_Push(NUMBER_VAL(a + b));
+                }
+                else
+                {
+                    runtimeError(
+                        "Operands must be two numbers or two strings.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
+            case OP_NEGATE:
+                // ensure Value type being used for negation is a number
+                if (!IS_NUMBER(peek(0)))
+                {
+                    runtimeError("Operand must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                Vm_Push(NUMBER_VAL(-AS_NUMBER(Vm_Pop())));
+                break;
+            case OP_SUBTRACT:
+                BINARY_OP(NUMBER_VAL, -);
+                break;
+            case OP_MULTIPLY:
+                BINARY_OP(NUMBER_VAL, *);
+                break;
+            case OP_DIVIDE:
+                BINARY_OP(NUMBER_VAL, /);
+                break;
+            case OP_NOT:
+                Vm_Push(BOOL_VAL(isFalsey(Vm_Pop())));
+                break;
+            case OP_PRINT:
+            {
+                // TODO: fix color printing here
+                Value_printValue(Vm_Pop(), 31);
+                printf("\n");
+                break;
+            }
+            case OP_JUMP:
+            {
+                uint16_t offset = READ_SHORT();
                 vm.ip += offset;
-            break;
-        }
-        case OP_LOOP:
-        {
-            uint16_t offset = READ_SHORT();
-            vm.ip -= offset;
-            break;
-        }
-        case OP_RETURN:
-        {
-            // Exit interpreter
-            return INTERPRET_OK;
-        }
+                break;
+            }
+            case OP_JUMP_IF_FALSE:
+            {
+                // offset tells us how much to increment ip in the event that the if statement is false.
+                // offset will jump over the body of the conditional
+                uint16_t offset = READ_SHORT();
+                if (isFalsey(peek(0)))
+                    vm.ip += offset;
+                break;
+            }
+            case OP_LOOP:
+            {
+                uint16_t offset = READ_SHORT();
+                vm.ip -= offset;
+                break;
+            }
+            case OP_RETURN:
+            {
+                // Exit interpreter
+                return INTERPRET_OK;
+            }
         }
     }
-#undef READ_BYTE
-#undef READ_SHORT
-#undef READ_CONSTANT
-#undef BINARY_OP
-#undef READ_STRING
+    // Explicit scoping for these macros, only used by run() function
+    #undef READ_BYTE
+    #undef READ_SHORT
+    #undef READ_CONSTANT
+    #undef BINARY_OP
+    #undef READ_STRING
 }
 
 InterpretResult Vm_Interpret(const char *source)
